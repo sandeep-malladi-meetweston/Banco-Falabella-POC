@@ -775,7 +775,7 @@ const BLOCKED_LITERALS = [
   "Accepted with condition",
   "Borrower message",
   "Document exception",
-  "Deed deadline",
+  "Closing deadline",
   "New upload",
   "Mark resolved",
   "Send reply & resolve",

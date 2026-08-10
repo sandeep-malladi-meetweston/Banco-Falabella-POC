@@ -64,11 +64,13 @@ test("the portfolio is twelve loans with twelve unique case ids", () => {
   ]);
 });
 
-test("exactly one loan is interactive and it is H-2026-08415", () => {
+test("exactly two loans are interactive: H-2026-08415 and H-2026-08377", () => {
   const loans = portfolio();
   const interactive = loans.filter(loan => loan.readonly !== true);
-  assert.equal(interactive.length, 1);
-  assert.equal(interactive[0].caseId, "H-2026-08415");
+  assert.deepEqual(caseIds(interactive), ["H-2026-08415", "H-2026-08377"]);
+  /* FIXTURE_LOANS still lists every read-only case in board order, including
+     a static entry for H-2026-08377 — buildPortfolio swaps it for the live
+     loan without moving its position, so the raw fixture list is unchanged. */
   assert.equal(plain(lender.FIXTURE_LOANS).length, 11);
   assert.ok(plain(lender.FIXTURE_LOANS).every(loan => loan.readonly === true));
 });

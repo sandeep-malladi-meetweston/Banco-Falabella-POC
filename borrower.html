@@ -2730,7 +2730,7 @@
        * a form she can see rather than one she has to reconcile. Three things,
        * in the order that answers the question she is actually asking:
        *
-       *   1. what she has to find on the day, where the programme wins hugely;
+       *   1. what she has Down Payment, where the programme wins hugely;
        *   2. what she pays every month, where it costs her a little;
        *   3. what the subsidised rate is worth on its own, which is the only
        *      figure on this card that is a saving in the ordinary sense.
@@ -2818,6 +2818,10 @@
         /* Positive when the programme costs more a month, which is the normal
            case: the extra 10% financed outweighs the 60 bp off the rate. */
         var monthlyDelta = f.paymentCLP - withoutBenefit;
+        /* What the 90% guarantee saves against the 80% standard loan's down
+           payment — said on both cards now that the trade-off card below is
+           disabled, so the one figure she'd actually act on is not lost. */
+        var lessDown = standardDown - f.downPaymentCLP;
         return (
           '<section class="panel-card" data-panel="pre-approval" aria-labelledby="result-title">' +
           '<span class="eyebrow">' +
@@ -2844,6 +2848,10 @@
             "borrower.result.financing",
             t("borrower.result.with-financing", { amount: credit.formatCLP(f.downPaymentCLP) })
           ) +
+          figureRow(
+            "borrower.result.less-down-payment",
+            t("borrower.result.less-down-payment-value", { amount: credit.formatCLP(lessDown) })
+          ) +
           "</div>" +
           '<div class="result-column"><span class="eyebrow">' +
           text("borrower.result.without-fogaes") +
@@ -2856,18 +2864,21 @@
             "borrower.result.financing",
             t("borrower.result.without-financing", { amount: credit.formatCLP(standardDown) })
           ) +
+          figureRow(
+            "borrower.result.more-down-payment",
+            t("borrower.result.more-down-payment-value", { amount: credit.formatCLP(lessDown) })
+          ) +
           "</div></div>" +
-          /* The two columns above are not the same loan, so the gap between them
-             is a trade rather than a saving. Tabulated, so the two rows of the
-             trade line up under the same two headings and the difference — the
-             only figure she has to act on — reads down one column: the money she
-             has to find nearly halves, the monthly payment barely moves. */
+          /* The trade-off card (§ renderTradeOff) is disabled for now — the down
+             payment saving above is said on both cards instead. Commented out
+             rather than deleted, so it can come back as-is.
           renderTradeOff(f, {
             withoutBenefit: withoutBenefit,
             standardDown: standardDown,
             standardLoanUF: standardLoanUF,
             monthlyDelta: monthlyDelta
           }) +
+          */
           '<p class="panel-lead">' +
           text("borrower.result.guarantee-explainer") +
           '</p><p class="footnote">' +

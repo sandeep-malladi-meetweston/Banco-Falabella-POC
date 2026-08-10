@@ -88,7 +88,7 @@
       "review.borrower-message": "Borrower message",
       "review.new-upload": "New upload",
       "review.document-exception": "Document exception",
-      "review.deed-deadline": "Deed deadline",
+      "review.deed-deadline": "Closing deadline",
 
       /* ============================================================= audit */
       "audit.application-submitted": "Application submitted",
@@ -101,7 +101,7 @@
       "audit.document-uploaded": "Document uploaded",
       "audit.document-verdict-changed": "Document verdict changed",
       "audit.document-exception-created": "Document exception raised",
-      "audit.deed-deadline-raised": "Deed deadline raised",
+      "audit.deed-deadline-raised": "Closing deadline raised",
       "audit.condition-cleared": "Condition cleared",
       "audit.stage-changed": "Case stage changed",
       "audit.developer-query-sent": "Query sent to the developer",
@@ -228,9 +228,9 @@
       "lender.substatus.new-upload": "New upload",
       "lender.substatus.appraisal-below-request": "Appraisal below request",
       "lender.substatus.credit-review": "In underwriting",
-      "lender.substatus.deed-in-days": "Deed in {days} days",
+      "lender.substatus.deed-in-days": "Closing in {days} days",
       "lender.substatus.clear-to-sign": "Clear to sign",
-      "lender.substatus.awaiting-closing": "Deed signed · awaiting closing",
+      "lender.substatus.awaiting-closing": "Signed · awaiting closing",
       "lender.substatus.disbursed-on": "Disbursed {date}",
       "lender.substatus.performing": "Performing",
       "lender.substatus.paid-off-on": "Paid off {date}",
@@ -257,7 +257,7 @@
       "lender.notifications.new-upload":
         "A new file arrived and is waiting for a verdict.",
       "lender.notifications.borrower-message": "{borrower} wrote about this document.",
-      "lender.notifications.deed-deadline": "The deed date is close and the case is not signed.",
+      "lender.notifications.deed-deadline": "The closing date is near and the case is not signed.",
       /* What is actually wrong, on the two documents this demo turns on. A line
          that says "a check failed" sends the officer looking; a line that names
          the folio and the field does not. */
@@ -265,6 +265,8 @@
         "The certificate records a mortgage in favour of another bank at Folio 1,842 No.1,190 (2024). The application declared no encumbrances. Everything else on the certificate — owner, tax roll, validity — matched.",
       "lender.notifications.detail.tax-folder":
         "Page 1 arrived cropped and the taxpayer RUT could not be read (18.452.30_-4). The other three fields on the folder matched.",
+      "lender.notifications.detail.purchase-promise":
+        "The purchase promise was signed three weeks after the appraisal report. It should have followed right away. Everything else on the document — parties, price, property — matched the file.",
 
       /* The one alert, and the one panel it points at */
       "lender.needs.alert": "Notifications",
@@ -414,11 +416,15 @@
          send that cannot go. */
       "lender.conversation.sent": "Message sent to Javiera.",
       "lender.conversation.blank": "Type a message before sending.",
-      "lender.conversation.readonly": "This case is a sample. Only H-2026-08415 can be messaged.",
+      "lender.conversation.readonly": "This case is a read-only sample and cannot be messaged.",
       /* The handoff exchange, already on the case when it reaches the desk. */
       "lender.conversation.seed-routed":
         "Your title certificate shows a mortgage from another bank registered on the property. I have routed it to a mortgage specialist with the document and the registration details.",
       "lender.conversation.seed-reply": "OK, I will wait to hear. 🙏",
+      /* The second live case's own handoff exchange, about its own exception. */
+      "lender.conversation.seed-routed-377":
+        "Your purchase promise was signed three weeks after the appraisal report. It should have followed right away, so I have routed it to underwriting to confirm the correct date before we continue.",
+      "lender.conversation.seed-reply-377": "Understood, thank you for checking.",
       "lender.documents.history-heading": "Upload history",
       "lender.documents.no-history": "No uploads recorded.",
       "lender.documents.comparison-heading":
@@ -522,7 +528,7 @@
         "This case is within your delegated authority of {authority}, so no escalation is needed.",
       "lender.action.approve": "Approve with conditions",
       "lender.action.approve-blocked":
-        "Approval stays disabled until both gating conditions are cleared.",
+        "Check notifications and fix them to approve the loan with conditions.",
       "lender.action.sign": "Sign approval",
       "lender.action.reset": "Reset case",
       "lender.action.decline": "Decline the application",
@@ -570,7 +576,6 @@
          decides whether to open the panel before she can read anything in it. */
       "lender.assistant.open-aria": "Open the deal assistant",
       "lender.assistant.close-aria": "Collapse the deal assistant",
-      "lender.assistant.waiting": "{count} waiting",
 
       /* The standing brief: what is in the way, right now. */
       /* No list of the items here. They are the queue directly above this
@@ -712,14 +717,6 @@
       "lender.decision.panel-heading": "Officer decision",
       "lender.decision.state-ready":
         "Both gating conditions are cleared. Case {case} can be approved.",
-      "lender.decision.state-blocked":
-        "{count} gating condition(s) are still open on case {case}, so approval is disabled. A manual override can carry it anyway.",
-      /* The panel names what is gating approval but does not list it a second
-         time — the conditions already have one home, the Notifications panel,
-         with the document behind each one and the reply that clears it. This
-         is the sign that says so, and the way there. */
-      "lender.decision.gating-note": "What is gating this case is answerable in Notifications.",
-      "lender.decision.gating-action": "See what's open in Notifications",
       "lender.decision.state-approved": "Case {case} is approved and awaiting signature.",
       "lender.decision.state-signed": "Case {case} is approved and signed.",
       "lender.decision.state-declined": "Case {case} was declined.",
@@ -966,7 +963,7 @@
          column that names them is headed with the question they answer. */
       "borrower.result.trade-col-when": "When",
       "borrower.result.trade-col-difference": "Difference",
-      "borrower.result.trade-up-front": "To find on the day",
+      "borrower.result.trade-up-front": "Down Payment",
       "borrower.result.trade-monthly": "Every month",
       "borrower.result.more-monthly": "More per month",
       "borrower.result.less-monthly": "Less per month",
@@ -982,6 +979,8 @@
         "These are two different loans. The guarantee lets you borrow 90% of the value instead of 80%, so you need {down} less up front and owe {extra} more — which is why the monthly payment is higher, not lower.",
       "borrower.result.total-saving": "Total saving over {years} years",
       "borrower.result.less-down-payment": "Less needed up front",
+      "borrower.result.more-down-payment": "More needed up front",
+      "borrower.result.more-down-payment-value": "{amount} more",
       "borrower.result.apr": "Indicative APR",
       "borrower.result.apply": "Submit application",
       "borrower.result.simulate-again": "Simulate again",
@@ -1138,7 +1137,7 @@
         "Upload the correct document to move this item forward.",
       "borrower.banner.incomplete.title": "1 field still needs confirming",
       "borrower.banner.incomplete.body":
-        "This is the right document. Re-upload page 1 in full.",
+        "Page 1 arrived cropped and the taxpayer RUT could not be read (18.452.30_-4). The other three fields on the folder matched.",
       "borrower.banner.review.title": "Being reviewed by a specialist",
       "borrower.banner.review.body":
         "A mortgage specialist is checking the encumbrance on the title. Nothing is needed from you.",
@@ -1521,6 +1520,8 @@
         "El certificado registra una hipoteca a favor de otro banco en Fojas 1.842 N°1.190 (2024). La solicitud declaró sin gravámenes. Todo lo demás del certificado — propietario, rol de avalúo, vigencia — coincidió.",
       "lender.notifications.detail.tax-folder":
         "La página 1 llegó cortada y no se pudo leer el RUT del contribuyente (18.452.30_-4). Los otros tres campos de la carpeta coincidieron.",
+      "lender.notifications.detail.purchase-promise":
+        "La promesa de compraventa se firmó tres semanas después del informe de tasación. Debería haberlo seguido de inmediato. El resto del documento — partes, precio, propiedad — coincidió con el expediente.",
 
       "lender.needs.alert": "Notificaciones",
       "lender.needs.alert-aria": "{notifications} en este caso — ir a ellas",
@@ -1643,10 +1644,13 @@
       "lender.conversation.sent": "Mensaje enviado a Javiera.",
       "lender.conversation.blank": "Escribe un mensaje antes de enviarlo.",
       "lender.conversation.readonly":
-        "Este caso es de muestra. Solo se puede escribir al H-2026-08415.",
+        "Este caso es una muestra de solo lectura y no admite mensajes.",
       "lender.conversation.seed-routed":
         "Tu certificado de dominio vigente muestra una hipoteca de otro banco inscrita sobre la propiedad. La derivé a un especialista hipotecario con el documento y los datos de inscripción.",
       "lender.conversation.seed-reply": "Ok, quedo atenta. 🙏",
+      "lender.conversation.seed-routed-377":
+        "Tu promesa de compraventa se firmó tres semanas después del informe de tasación. Debería haberlo seguido de inmediato, así que la derivé a evaluación de riesgo para confirmar la fecha correcta antes de continuar.",
+      "lender.conversation.seed-reply-377": "Entendido, gracias por revisarlo.",
 
       "lender.documents.history-heading": "Historial de carga",
       "lender.documents.no-history": "Sin cargas registradas.",
@@ -1782,7 +1786,6 @@
       "lender.assistant.asked": "Pregunta enviada al asistente. Su respuesta está en la columna.",
       "lender.assistant.open-aria": "Abrir el asistente del caso",
       "lender.assistant.close-aria": "Contraer el asistente del caso",
-      "lender.assistant.waiting": "{count} en espera",
       "lender.assistant.brief-open":
         "Hay {count} ítem(s) abiertos y no se puede aprobar nada hasta resolverlos.",
       "lender.assistant.brief-conditions":
@@ -1900,10 +1903,6 @@
       "lender.decision.panel-heading": "Decisión de la ejecutiva",
       "lender.decision.state-ready":
         "Las dos condiciones habilitantes están cumplidas. El caso {case} se puede aprobar.",
-      "lender.decision.state-blocked":
-        "Quedan {count} condición(es) habilitante(s) abiertas en el caso {case}, así que la aprobación está desactivada. Una anulación manual puede llevarlo igual.",
-      "lender.decision.gating-note": "Lo que frena este caso se responde en Notificaciones.",
-      "lender.decision.gating-action": "Ver qué falta en Notificaciones",
       "lender.decision.state-approved": "El caso {case} está aprobado y espera firma.",
       "lender.decision.state-signed": "El caso {case} está aprobado y firmado.",
       "lender.decision.state-declined": "El caso {case} fue rechazado.",
@@ -2141,6 +2140,8 @@
         "Son dos créditos distintos. La garantía te permite financiar el 90% del valor en vez del 80%, así que necesitas {down} menos al principio y debes {extra} más — por eso el dividendo es mayor, no menor.",
       "borrower.result.total-saving": "Ahorro total en {years} años",
       "borrower.result.less-down-payment": "Menos que reunir al principio",
+      "borrower.result.more-down-payment": "Más que reunir al principio",
+      "borrower.result.more-down-payment-value": "{amount} más",
       "borrower.result.apr": "CAE referencial",
       "borrower.result.apply": "Enviar solicitud",
       "borrower.result.simulate-again": "Simular de nuevo",
@@ -2302,7 +2303,7 @@
       "borrower.banner.rejected.body": "Sube el documento correcto para avanzar con este ítem.",
       "borrower.banner.incomplete.title": "Falta 1 dato por confirmar",
       "borrower.banner.incomplete.body":
-        "El documento es el correcto. Vuelve a subir solo la página 1 completa.",
+        "La página 1 llegó cortada y no se pudo leer el RUT del contribuyente (18.452.30_-4). Los otros tres campos de la carpeta coincidieron.",
       "borrower.banner.review.title": "En revisión por un especialista",
       "borrower.banner.review.body":
         "Un especialista hipotecario está revisando el gravamen del certificado de dominio. No necesitamos nada de ti.",

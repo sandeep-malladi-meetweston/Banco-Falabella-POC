@@ -171,7 +171,6 @@
     .assistant-launcher:hover{background:var(--brand)}
     .assistant-launcher:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
     .assistant-launcher-mark{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.16);font-size:14px;line-height:1}
-    .assistant-launcher-count{padding:2px 8px;border-radius:999px;background:#fff;color:var(--brand-deep);font:700 10px var(--mono);letter-spacing:.04em}
     /* A section inside the assistant's scroll, not a pane of its own. */
     .analysis-card{padding:12px 13px 13px;border:1px solid var(--rule);border-radius:10px;background:#fff}
     .analysis-card h3{margin:0;font:600 12.5px var(--display)}
@@ -423,6 +422,65 @@
         },
         state: null
       };
+
+      /* A second live case, so the desk never depends on exactly one working
+         file: the same real actions (verdicts, replies, sign/decline), a
+         second application record, its own storage key and its own opening
+         state — Ignacio's file rather than a copy of Javiera's. */
+      var SECOND_CASE_ID = "H-2026-08377";
+      var SECOND_CASE_REQUESTED_UF = 3100;
+      var SECOND_CASE_PROPERTY_UF = SECOND_CASE_REQUESTED_UF / credit.LTV_GUARANTEED;
+
+      var SECOND_CASE = {
+        caseId: SECOND_CASE_ID,
+        submittedAt: "2026-07-22T11:00:00.000Z",
+        checklistStartedAt: "2026-07-22T11:05:00.000Z",
+        property: {
+          address: "Avenida Vicuña Mackenna 5620, La Florida",
+          project: "Residencial Vicuña Mackenna",
+          commune: "La Florida",
+          taxRoll: "2210-14",
+          conditionKey: "borrower.portal.property",
+          valueUF: SECOND_CASE_PROPERTY_UF,
+          developer: "Inmobiliaria Andes Sur SpA"
+        },
+        borrower: {
+          fullName: "Ignacio Bravo Lagos",
+          rut: "17.884.221-6",
+          dateOfBirth: "1987-11-03",
+          incomeCLP: credit.INCOME_CLP,
+          phone: "+56 9 7654 3210",
+          email: "ignacio.bravo@example.cl"
+        },
+        loan: {
+          requestedUF: SECOND_CASE_REQUESTED_UF,
+          downPaymentUF: credit.downPaymentUF(SECOND_CASE_PROPERTY_UF, credit.DOWN_PCT),
+          termYears: credit.TERM_YEARS,
+          annualRate: credit.RATE_GUARANTEED,
+          ltv: credit.LTV_GUARANTEED,
+          guarantee: "FOGAES",
+          deedTargetDate: "2026-09-12"
+        },
+        officer: {
+          name: t("lender.officer.name"),
+          role: t("lender.officer.role"),
+          authorityUF: credit.OFFICER_AUTHORITY_UF
+        },
+        state: null
+      };
+
+      /* Every live case in the demo, primary first. Read-only fixtures are
+         not here — only cases with their own storage key, their own opening
+         state and every control enabled. */
+      var LIVE_CASES = [FALLBACK_CASE, SECOND_CASE];
+
+      function liveCaseData(caseId) {
+        var found = null;
+        LIVE_CASES.forEach(function (data) {
+          if (data.caseId === caseId) found = data;
+        });
+        return found || FALLBACK_CASE;
+      }
 
       /* ============================================================== fixtures */
 
@@ -789,6 +847,63 @@
       }
 
       FALLBACK_CASE.state = fallbackCaseState();
+      FALLBACK_CASE.openingState = fallbackCaseState;
+
+      /* Ignacio's conversation already on the case when it reaches the desk:
+         the appraisal came back after the promise was signed, and the two
+         dates disagree. Same shape as Javiera's handoff messages, filed
+         against the document the exception is actually about. */
+      function secondCaseMessages() {
+        return [
+          {
+            id: "message-377-seed-1",
+            author: "assistant",
+            text: t("lender.conversation.seed-routed-377"),
+            timestamp: "2026-08-05T16:35:00.000Z"
+          },
+          {
+            id: "message-377-seed-2",
+            author: "borrower",
+            text: t("lender.conversation.seed-reply-377"),
+            timestamp: "2026-08-05T16:38:00.000Z"
+          }
+        ];
+      }
+
+      /* Ignacio's file: every document accepted, one open exception on the
+         purchase promise, the inspection already back. Second live case, its
+         own storage key, every control enabled — not a copy of Javiera's. */
+      function secondCaseState() {
+        var documents = allAccepted();
+        documents["purchase-promise"].messages = secondCaseMessages();
+        return caseState({
+          nextSequence: 2,
+          documents: documents,
+          reviewItems: [
+            reviewItem(
+              "review-377-1",
+              "document-exception",
+              "purchase-promise",
+              "2026-08-05T16:40:00.000Z"
+            )
+          ],
+          /* Title and tax folder both arrived clean — the open work on this
+             file is the purchase-promise date, which the approval gate does
+             not touch (§3.4 gates on c1/c2 alone). Cleared here rather than
+             left open like a fixture's, because "send a query to the
+             developer" is Javiera's title-encumbrance script and would say
+             the wrong thing about a case that has no title problem. */
+          conditions: conditionsCleared("2026-08-03T15:05:00.000Z"),
+          workflow: {
+            submittedAt: SECOND_CASE.submittedAt,
+            checklistStartedAt: SECOND_CASE.checklistStartedAt,
+            inspectionAt: "2026-08-03T15:00:00.000Z"
+          }
+        });
+      }
+
+      SECOND_CASE.state = secondCaseState();
+      SECOND_CASE.openingState = secondCaseState;
 
       /* ================================================================ dates */
 
@@ -1105,41 +1220,51 @@
 
       /* -------------------------------------------------------- the case state */
 
-      function fallbackCase(reason) {
-        return { state: fallbackCaseState(), source: "fallback", reason: reason };
+      function caseStorageKey(caseData) {
+        return "bfDemoCase:" + (caseData || FALLBACK_CASE).caseId;
+      }
+
+      function fallbackCase(reason, caseData) {
+        var data = caseData || FALLBACK_CASE;
+        return { state: data.openingState(), source: "fallback", reason: reason };
       }
 
       /**
        * The case as storage holds it, or the built-in fixture when storage has
        * nothing usable to say. `source` and `reason` are the honest account of which
        * of the two happened, so a caller can announce it rather than guess.
+       *
+       * `caseData` picks which live case is being opened — the primary case
+       * unless told otherwise, so every existing one-argument call keeps its
+       * old meaning exactly.
        */
-      function loadCase(storage) {
+      function loadCase(storage, caseData) {
+        var data = caseData || FALLBACK_CASE;
         var store = storage === undefined ? caseStorage() : storage;
-        var raw = readRaw(store, CASE_STORAGE_KEY);
-        if (!raw.ok) return fallbackCase("unreadable");
-        if (!raw.value) return fallbackCase("empty");
+        var raw = readRaw(store, caseStorageKey(data));
+        if (!raw.ok) return fallbackCase("unreadable", data);
+        if (!raw.value) return fallbackCase("empty", data);
         var parsed;
         try {
           parsed = JSON.parse(raw.value);
         } catch (error) {
-          return fallbackCase("unreadable");
+          return fallbackCase("unreadable", data);
         }
         if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-          return fallbackCase("malformed");
+          return fallbackCase("malformed", data);
         }
-        if (typeof parsed.version !== "number") return fallbackCase("malformed");
+        if (typeof parsed.version !== "number") return fallbackCase("malformed", data);
         /* A version this build does not know is not repaired into something
            plausible: §7 says it resets. */
-        if (parsed.version !== workspace.STATE_VERSION) return fallbackCase("version");
+        if (parsed.version !== workspace.STATE_VERSION) return fallbackCase("version", data);
         if (!parsed.documents || typeof parsed.documents !== "object") {
-          return fallbackCase("malformed");
+          return fallbackCase("malformed", data);
         }
         var stored = workspace.normalizeState(parsed, {
-          submittedAt: FALLBACK_CASE.submittedAt,
-          checklistStartedAt: FALLBACK_CASE.checklistStartedAt
+          submittedAt: data.submittedAt,
+          checklistStartedAt: data.checklistStartedAt
         });
-        if (untouched(stored)) return fallbackCase("pristine");
+        if (untouched(stored)) return fallbackCase("pristine", data);
         return { state: stored, source: "storage", reason: null };
       }
 
@@ -1162,9 +1287,9 @@
       }
 
       /** False when storage refused it; the caller announces view-only, once. */
-      function saveCase(storage, state) {
+      function saveCase(storage, state, caseData) {
         var store = storage === undefined ? caseStorage() : storage;
-        return writeRaw(store, CASE_STORAGE_KEY, JSON.stringify(state));
+        return writeRaw(store, caseStorageKey(caseData), JSON.stringify(state));
       }
 
       /* ------------------------------------------------------------ the bridge */
@@ -1429,8 +1554,9 @@
         };
       }
 
-      /* The one loan that is not a fixture. Its substatus, stage and review
-         queue are all read out of the live state, so a borrower upload on the
+      /* A live loan, not a fixture — the primary case or the second live case.
+         Its substatus, stage and review queue are all read out of the live
+         state, so a borrower upload on the
          other surface changes this card without anything here being touched. */
       function createInteractiveLoan(caseData, state) {
         var data = caseData || FALLBACK_CASE;
@@ -1454,8 +1580,35 @@
         };
       }
 
-      function buildPortfolio(caseData, state) {
-        return [createInteractiveLoan(caseData, state)].concat(FIXTURE_LOANS);
+      /**
+       * The board, in its one fixed order. `FIXTURE_LOANS` still lists every
+       * read-only case exactly where spec §5.4 put it — including the second
+       * live case's entry, so its position on the board never moves. Building
+       * the portfolio swaps that one entry for the live loan; nothing else
+       * about the array changes.
+       *
+       * Two call shapes, for one reason: every existing caller already says
+       * `buildPortfolio(FALLBACK_CASE, state)` to hand the primary case its
+       * live state. That shape is kept exactly as it was. Handing a plain
+       * object instead — `{ [caseId]: state }` — sets more than one case's
+       * state at once, which only `init()` needs, because it is the only
+       * caller carrying more than one.
+       */
+      function buildPortfolio(caseDataOrStates, state) {
+        var overrides = {};
+        if (caseDataOrStates && caseDataOrStates.caseId) {
+          overrides[caseDataOrStates.caseId] = state !== undefined ? state : caseDataOrStates.state;
+        } else if (caseDataOrStates && typeof caseDataOrStates === "object") {
+          overrides = caseDataOrStates;
+        }
+        var liveById = {};
+        LIVE_CASES.forEach(function (data) {
+          liveById[data.caseId] = createInteractiveLoan(data, overrides[data.caseId]);
+        });
+        var rest = FIXTURE_LOANS.map(function (fixture) {
+          return liveById[fixture.caseId] || fixture;
+        });
+        return [liveById[CASE_ID]].concat(rest);
       }
 
       /* =============================================================== metrics */
@@ -2361,13 +2514,20 @@
 
       /* The three that touch a verdict are only offered where there is a
          document to carry one, and only while it has actually arrived: there is
-         no accepting or rejecting a file nobody has uploaded. */
+         no accepting or rejecting a file nobody has uploaded. Once a verdict is
+         on offer, "reply" and "resolve" step aside — the decision is made on
+         the document, not talked around it. Only a message or a field query,
+         with no document behind it, still needs the two of them. */
       function reviewDecisionsFor(loan, item) {
         var record = item.documentId ? loan.state.documents[item.documentId] : null;
         var settleable = !!record && record.verdict !== "not-uploaded";
+        if (settleable) {
+          return REVIEW_DECISIONS.filter(function (decision) {
+            return decision !== "reply" && decision !== "resolve";
+          });
+        }
         return REVIEW_DECISIONS.filter(function (decision) {
-          if (decision === "reply" || decision === "resolve") return true;
-          return settleable;
+          return decision === "reply" || decision === "resolve";
         });
       }
 
@@ -3604,12 +3764,6 @@
        * commit, for the same reason the send-back does: a decision nobody wrote
        * a reason for is a decision nobody can review.
        */
-      function openConditionCount(loan) {
-        return loan.state.conditions.filter(function (condition) {
-          return !condition.cleared;
-        }).length;
-      }
-
       function decisionStateLine(loan, record, ready) {
         if (record && record.outcome === "declined") {
           return text("lender.decision.state-declined", { case: loan.caseId });
@@ -3620,10 +3774,7 @@
           });
         }
         if (ready) return text("lender.decision.state-ready", { case: loan.caseId });
-        return text("lender.decision.state-blocked", {
-          case: loan.caseId,
-          count: openConditionCount(loan)
-        });
+        return "";
       }
 
       /* The reason box and the two buttons that close it, shared by the decline
@@ -3670,31 +3821,26 @@
         var record = decisionRecord(loan.state, loan);
         var ready = workspace.readyToApprove(loan.state);
         var decided = Boolean(record);
-        var draft = view.draft === "decline" || view.draft === "override" ? view.draft : null;
+        var draft = view.draft === "decline" ? view.draft : null;
+        var stateLine = decisionStateLine(loan, record, ready);
         return (
           '<section class="workspace-section"><div class="decision-panel"><h3>' +
           text("lender.decision.panel-heading") +
-          '</h3><p class="decision-state">' +
-          decisionStateLine(loan, record, ready) +
-          "</p>" +
-          /* Blocked said *how many* and named none of them, so seeing it here
-             meant going to find out what elsewhere. The conditions already
-             have one home — Notifications, with the document behind each one
-             and the reply that clears it — so this names that home and takes
-             you to it rather than listing them a second time. */
-          (!decided && !ready
-            ? '<div class="document-handoff"><p>' +
-              text("lender.decision.gating-note") +
-              '</p><button type="button" class="primary" data-workspace-action="needs-review">' +
-              text("lender.decision.gating-action") +
-              "</button></div>"
-            : "") +
+          "</h3>" +
+          (stateLine ? '<p class="decision-state">' + stateLine + "</p>" : "") +
           (decided
             ? ""
             : '<div class="action-bar">' +
               actionButton("approve", "lender.action.approve", !ready, ready) +
               actionButton("decline", "lender.action.decline", false, false) +
-              actionButton("override", "lender.action.override", false, false) +
+              /* Manual override is not a second reason box beside the one
+                 Decline already opens — the conditions it would carry have
+                 one home, Notifications, with the document behind each one
+                 and the reply that clears it. So this button goes there
+                 rather than opening a form of its own. */
+              '<button type="button" data-workspace-action="needs-review">' +
+              text("lender.action.override") +
+              "</button>" +
               "</div>" +
               (ready ? "" : '<p class="readonly-note">' + text("lender.action.approve-blocked") + "</p>")) +
           (draft && !decided ? renderDecisionDraft(loan, draft) : "") +
@@ -5024,7 +5170,6 @@
          so the launcher is not on screen to sit on top of it. */
       function renderAssistantLauncher(loan, view) {
         if (view && view.assistantOpen) return "";
-        var waiting = needsReviewCount(loan);
         return (
           '<button type="button" class="assistant-launcher"' +
           ' data-workspace-action="toggle-assistant" aria-expanded="false"' +
@@ -5034,11 +5179,6 @@
           '<span class="assistant-launcher-label">' +
           text("lender.assistant.title") +
           "</span>" +
-          (waiting
-            ? '<span class="assistant-launcher-count">' +
-              text("lender.assistant.waiting", { count: waiting }) +
-              "</span>"
-            : "") +
           "</button>"
         );
       }
@@ -5547,9 +5687,11 @@
 
       /* Everything back to the state the case arrived in (§5.6). The trail resets
          with it: an opening state that remembers being reset is not the opening
-         state. */
-      function resetCase() {
-        var opening = fallbackCaseState();
+         state. Each live case resets to its own opening state, not the
+         primary case's. */
+      function resetCase(options) {
+        var data = (options && options.caseData) || FALLBACK_CASE;
+        var opening = data.openingState();
         return outcome(null, opening, "lender.status.reset");
       }
 
@@ -5577,15 +5719,21 @@
         var status = document.getElementById("lender-status");
         var historyApi = globalThis.history;
         var locationLike = globalThis.location || { pathname: "", search: "", hash: "" };
-        var caseData = FALLBACK_CASE;
         /* Whatever the borrower page left in this tab's session storage, or the
-           built-in fixture — so the board is complete either way (§7). */
-        var opened = loadCase(caseStorage());
-        var liveState = opened.state;
+           built-in fixture — so the board is complete either way (§7). Every
+           live case keeps its own slot: the primary case's storage is shared
+           with the borrower page, the second live case's is this tab's alone. */
+        var liveStates = {};
+        var primaryOpened = null;
+        LIVE_CASES.forEach(function (data) {
+          var opened = loadCase(caseStorage(), data);
+          liveStates[data.caseId] = opened.state;
+          if (data.caseId === CASE_ID) primaryOpened = opened;
+        });
         var viewState = assign(assign({}, DEFAULT_VIEW_STATE), parseCaseHash(locationLike.hash));
 
         function loans() {
-          return buildPortfolio(caseData, liveState);
+          return buildPortfolio(liveStates);
         }
 
         function caseIds(list) {
@@ -5618,10 +5766,11 @@
           if (notice) announce(notice.key, notice.params);
         }
 
-        /* Every change to the live case is written back, so switching to the
-           borrower view in this tab hands over the case as it now stands. */
-        function persist() {
-          if (!saveCase(caseStorage(), liveState)) announceViewOnly();
+        /* Every change to a live case is written back to its own key, so
+           switching to the borrower view in this tab hands over the primary
+           case as it now stands. */
+        function persist(caseId) {
+          if (!saveCase(caseStorage(), liveStates[caseId], liveCaseData(caseId))) announceViewOnly();
         }
 
         /* The actions report `{ key, params }` rather than English. */
@@ -5964,12 +6113,15 @@
                 return;
               }
               apply(
-                commitReviewDecision(liveState, id, decision, body, wording ? wording.value : "", {
+                loan.caseId,
+                commitReviewDecision(liveStates[loan.caseId], id, decision, body, wording ? wording.value : "", {
                   timestamp: nextInstant(),
                   borrowerName: loan.borrowerName,
-                  /* Words sent to the live case reach her thread; a fixture's do
-                     not leave the board, because there is no borrower behind it. */
-                  storage: loan.readonly ? undefined : bridgeStorage()
+                  /* Words sent to the primary live case reach her thread over
+                     the bridge; the second live case and every fixture stay on
+                     this surface, because there is no borrower page behind
+                     them. */
+                  storage: loan.caseId === CASE_ID ? bridgeStorage() : undefined
                 })
               );
             });
@@ -5983,8 +6135,9 @@
               var picked = root.querySelector('[data-override-verdict="' + documentId + '"]');
               var wording = root.querySelector('[data-override-condition="' + documentId + '"]');
               apply(
+                loan.caseId,
                 commitVerdictOverride(
-                  liveState,
+                  liveStates[loan.caseId],
                   documentId,
                   picked ? picked.value : "",
                   wording ? wording.value : "",
@@ -6004,9 +6157,10 @@
                 return;
               }
               apply(
-                commitDocumentRequest(liveState, documentId, reason, {
+                loan.caseId,
+                commitDocumentRequest(liveStates[loan.caseId], documentId, reason, {
                   timestamp: nextInstant(),
-                  storage: loan.readonly ? undefined : bridgeStorage()
+                  storage: loan.caseId === CASE_ID ? bridgeStorage() : undefined
                 })
               );
             });
@@ -6108,14 +6262,16 @@
 
         /* One place where an action's outcome becomes the new live state, a
            re-render and an announcement. An action that changed nothing still
-           announces — that is how a refusal is heard. */
-        function apply(result) {
+           announces — that is how a refusal is heard. `caseId` says which live
+           case the result belongs to, so two cases can be mid-gesture at once
+           without one's outcome landing on the other. */
+        function apply(caseId, result) {
           if (!result) return;
           rememberScroll();
           if (result.changed) {
-            liveState = result.state;
+            liveStates[caseId] = result.state;
             panelScroll = 0;
-            persist();
+            persist(caseId);
           }
           render();
           announceOutcome(result);
@@ -6125,9 +6281,12 @@
         }
 
         /* An arriving event lands here, possibly seconds after the click that
-           provoked it, and reads the state as it is at that moment. */
-        function readState() {
-          return liveState;
+           provoked it, and reads the state as it is at that moment — of
+           whichever case scheduled it. */
+        function readStateFor(caseId) {
+          return function () {
+            return liveStates[caseId];
+          };
         }
 
         /* A box that has just appeared and is the only thing to do next takes
@@ -6139,6 +6298,13 @@
         }
 
         function runCaseAction(action, loan) {
+          var caseId = loan.caseId;
+          var state = liveStates[caseId];
+          /* An arrival scheduled now must land on this case, whichever one is
+             open by the time it fires. */
+          function applyHere(result) {
+            apply(caseId, result);
+          }
           if (action === "developer-query") {
             viewState.draft = "developer-query";
             render();
@@ -6147,39 +6313,41 @@
           if (action === "send-query") {
             viewState.draft = null;
             apply(
-              requestDeveloperConfirmation(liveState, {
+              caseId,
+              requestDeveloperConfirmation(state, {
                 timestamp: nextInstant(),
-                caseId: loan.caseId,
-                readState: readState,
-                onArrival: apply
+                caseId: caseId,
+                readState: readStateFor(caseId),
+                onArrival: applyHere
               })
             );
             return;
           }
           if (action === "remind-borrower") {
             apply(
-              remindBorrower(liveState, {
+              caseId,
+              remindBorrower(state, {
                 timestamp: nextInstant(),
-                readState: readState,
-                onArrival: apply
+                readState: readStateFor(caseId),
+                onArrival: applyHere
               })
             );
             return;
           }
           if (action === "escalate") {
-            apply(escalate(liveState));
+            apply(caseId, escalate(state));
             return;
           }
           if (action === "reorder-service") {
-            apply(reorderServices(liveState, { timestamp: nextInstant() }));
+            apply(caseId, reorderServices(state, { timestamp: nextInstant() }));
             return;
           }
           if (action === "approve") {
-            apply(approveWithConditions(liveState, { timestamp: nextInstant() }));
+            apply(caseId, approveWithConditions(state, { timestamp: nextInstant() }));
             return;
           }
           if (action === "sign") {
-            apply(signApproval(liveState, { timestamp: nextInstant(), loan: loan }));
+            apply(caseId, signApproval(state, { timestamp: nextInstant(), loan: loan }));
             return;
           }
           /* The two hand-taken decisions open their reason box first: the click
@@ -6207,19 +6375,19 @@
             }
             var settled =
               kind === "decline"
-                ? declineCase(liveState, reason, { timestamp: nextInstant(), caseId: loan.caseId })
-                : overrideApproval(liveState, reason, {
+                ? declineCase(state, reason, { timestamp: nextInstant(), caseId: caseId })
+                : overrideApproval(state, reason, {
                     timestamp: nextInstant(),
-                    caseId: loan.caseId
+                    caseId: caseId
                   });
             if (settled.changed) viewState.draft = null;
-            apply(settled);
+            apply(caseId, settled);
             return;
           }
           if (action === "reset") {
             viewState.draft = null;
             actionClock = DEMO_NOW;
-            apply(resetCase());
+            apply(caseId, resetCase({ caseData: liveCaseData(caseId) }));
           }
         }
 
@@ -6327,11 +6495,14 @@
         }
 
         /* The borrower tab wrote to the bridge. Absorb what is new and re-render, so
-           her message reaches the board within a second (§7). */
+           her message reaches the board within a second (§7). The bridge only
+           ever carries the primary case's conversation — the second live case
+           has no borrower page to write it. */
         function onStorage(event) {
           if (!event || event.key !== MESSAGE_BRIDGE_KEY) return;
           apply(
-            bridgeAbsorb(liveState, {
+            CASE_ID,
+            bridgeAbsorb(liveStates[CASE_ID], {
               storage: bridgeStorage(),
               /* Stamped when this desk received it. */
               receivedAt: nextInstant()
@@ -6345,10 +6516,10 @@
           globalThis.addEventListener("storage", onStorage);
         }
 
-        var backlog = absorbBacklog(liveState, opened.source, bridgeStorage());
+        var backlog = absorbBacklog(liveStates[CASE_ID], primaryOpened.source, bridgeStorage());
         if (backlog.changed) {
-          liveState = backlog.state;
-          persist();
+          liveStates[CASE_ID] = backlog.state;
+          persist(CASE_ID);
         }
 
         /* `?case=` from the borrower's role-switch link, and `&take=1` with it. The
@@ -6382,9 +6553,12 @@
         WORKSPACE_TABS: WORKSPACE_TABS,
         DEFAULT_VIEW_STATE: DEFAULT_VIEW_STATE,
         FALLBACK_CASE: FALLBACK_CASE,
+        SECOND_CASE: SECOND_CASE,
+        LIVE_CASES: LIVE_CASES,
         FIXTURE_LOANS: FIXTURE_LOANS,
 
         fallbackCaseState: fallbackCaseState,
+        secondCaseState: secondCaseState,
         createInteractiveLoan: createInteractiveLoan,
         buildPortfolio: buildPortfolio,
         portfolioMetrics: portfolioMetrics,

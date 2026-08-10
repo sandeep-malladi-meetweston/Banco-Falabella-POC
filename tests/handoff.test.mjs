@@ -211,7 +211,7 @@ test("with empty storage the lender still renders a complete twelve-loan board",
 
   assert.equal(list.length, 12);
   assert.equal(new Set(list.map(loan => loan.caseId)).size, 12);
-  assert.equal(list.filter(loan => !loan.readonly).length, 1);
+  assert.equal(list.filter(loan => !loan.readonly).length, 2);
 
   /* All six columns are occupied, so no stage is ever demoed empty (§5.4). */
   const stages = new Set(list.map(loan => loan.stage));
