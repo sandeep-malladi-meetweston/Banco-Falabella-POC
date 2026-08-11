@@ -336,6 +336,7 @@
 
       "lender.review.reply-label": "Reply about this item",
       "lender.review.reply-placeholder": "Reply to {borrower}…",
+      "lender.review.reply-in-chat": "Reply in the conversation",
       "lender.review.mark-resolved": "Mark resolved",
       "lender.review.send-reply": "Send reply & resolve",
       /* The queue's decision. Each option names the act and its object, not the
@@ -1594,6 +1595,7 @@
 
       "lender.review.reply-label": "Responder sobre este ítem",
       "lender.review.reply-placeholder": "Responder a {borrower}…",
+      "lender.review.reply-in-chat": "Responder en la conversación",
       "lender.review.mark-resolved": "Marcar resuelto",
       "lender.review.send-reply": "Enviar respuesta y resolver",
       "lender.review.decision-label": "Decisión",

@@ -86,7 +86,7 @@
     .workspace-drive-link svg{width:15px;height:15px}
     .workspace-tabs{display:flex;padding:0 24px;border-bottom:1px solid var(--rule)}.workspace-tabs button{padding:13px 11px;border:0;border-bottom:3px solid transparent;background:#fff;color:var(--slate);font-weight:600}.workspace-tabs button[aria-selected="true"]{border-bottom-color:var(--brand);color:var(--ink)}/* The last inch of the panel is under the launcher, so the scroll ends above
        it rather than behind it. */
-    .workspace-panel{flex:1;overflow:auto;padding:22px 24px 88px}.workspace-body{flex:1;display:flex;min-height:0}.workspace-section{margin-bottom:24px}.workspace-section h3,.record-card h3{margin:0 0 10px;font:600 15px var(--display)}.section-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}.review-queue{margin:2px 0 10px;color:var(--slate);font-size:11.5px}.no-action{margin:10px 0;padding:14px;border:1px solid var(--rule);border-radius:9px;background:var(--shell)}.no-action p{margin:6px 0 0;color:var(--slate)}.review-queue-list{border:1px solid var(--brand-rule);border-radius:9px;overflow:hidden;background:var(--brand-wash)}.review-item{margin:0;padding:12px 14px}.review-item+.review-item{border-top:1px solid var(--brand-rule)}.review-item-heading{display:flex;flex-wrap:wrap;align-items:baseline;gap:3px 9px;color:var(--brand-deep)}.review-item-heading strong{font:600 13.5px var(--display)}.review-item-where{color:var(--slate);font-size:11.5px;overflow-wrap:anywhere}.review-item-detail{margin:4px 0 0;color:var(--slate);font-size:12.5px;line-height:1.5;overflow-wrap:anywhere}.review-item blockquote{margin:7px 0 0;padding:9px 11px;border:1px solid #d7e8de;border-radius:7px;background:#fff;overflow-wrap:anywhere}.review-item blockquote strong{font-size:11px}.review-item blockquote p{margin:3px 0 0;font-size:12.5px}.review-item textarea{flex:1;min-width:0;height:34px;min-height:34px;margin:0;padding:7px 9px;border:1px solid #cbd4dc;border-radius:6px;resize:none}.review-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:8px}.review-item .review-actions{align-items:center;justify-content:flex-start;margin-top:9px}/* ---- the decision on an open item ----
+    .workspace-panel{flex:1;overflow:auto;padding:22px 24px 88px}.workspace-body{flex:1;display:flex;min-height:0}.workspace-section{margin-bottom:24px}.workspace-section h3,.record-card h3{margin:0 0 10px;font:600 15px var(--display)}.section-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}.review-queue{margin:2px 0 10px;color:var(--slate);font-size:11.5px}.no-action{margin:10px 0;padding:14px;border:1px solid var(--rule);border-radius:9px;background:var(--shell)}.no-action p{margin:6px 0 0;color:var(--slate)}.review-queue-list{border:1px solid var(--brand-rule);border-radius:9px;overflow:hidden;background:var(--brand-wash)}.review-item{margin:0;padding:12px 14px}.review-item+.review-item{border-top:1px solid var(--brand-rule)}.review-item-heading{display:flex;flex-wrap:wrap;align-items:baseline;gap:3px 9px;color:var(--brand-deep)}.review-item-heading strong{font:600 13.5px var(--display)}.review-item-where{color:var(--slate);font-size:11.5px;overflow-wrap:anywhere}.review-item-detail{margin:4px 0 0;color:var(--slate);font-size:12.5px;line-height:1.5;overflow-wrap:anywhere}.review-item .review-queue-link{display:block;margin:8px 0 0}.review-item textarea{flex:1;min-width:0;height:34px;min-height:34px;margin:0;padding:7px 9px;border:1px solid #cbd4dc;border-radius:6px;resize:none}.review-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:8px}.review-item .review-actions{align-items:center;justify-content:flex-start;margin-top:9px}/* ---- the decision on an open item ----
        A select and a short button on one line, where two full-width buttons
        used to stack down the rail. The select takes the slack because it is the
        part that carries words; the button is the same size whatever is chosen.
@@ -174,6 +174,7 @@
     .workspace-rail[hidden]{display:none}
     /* The launcher itself: the mark, the name, and what is waiting inside. */
     .assistant-launcher{position:absolute;z-index:3;right:18px;bottom:18px;display:flex;align-items:center;gap:9px;height:46px;padding:0 16px 0 13px;border:1px solid var(--brand-deep);border-radius:999px;background:var(--brand-deep);color:#fff;font:600 13px var(--display);box-shadow:0 10px 26px rgba(16,20,24,.28);cursor:pointer}
+    .assistant-launcher[hidden]{display:none}
     .assistant-launcher:hover{background:var(--brand)}
     .assistant-launcher:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
     .assistant-launcher-mark{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.16);font-size:14px;line-height:1}
@@ -1201,6 +1202,20 @@
 
       var CASE_STORAGE_KEY = "bfDemoCase:" + CASE_ID;
       var MESSAGE_BRIDGE_KEY = "bfDemoMessages:" + CASE_ID;
+      /* Written by the borrower page's Restart, in the same localStorage the
+         bridge lives in — sessionStorage cannot reach a lender tab that is
+         already open on its own copy of the case, and restarting the
+         borrower page must still be able to clear this desk's copy of a
+         conversation that will now never be added to. The value is the
+         bridge's own post-clear run number: already a number that only goes
+         up, so "the number here is higher than the one I last acted on" is
+         the whole test, with no clock of its own. */
+      var CASE_RESET_KEY = "bfDemoReset:" + CASE_ID;
+      /* This tab's own memory of which reset it has already applied — per
+         tab, in sessionStorage, for the same reason CASE_STORAGE_KEY is: a
+         second tab has not seen it yet and must act on it once, not on every
+         storage event this run happens to notice it in. */
+      var RESET_APPLIED_KEY = "bfDemoResetSeen:" + CASE_ID;
       var BRIDGE_VERSION = 1;
       var BRIDGE_LIMIT = 200;
       /* The assistant is a third voice on the bridge: it answers her on her own
@@ -1264,6 +1279,15 @@
           /* Quota, or private mode. The caller keeps working in memory. */
           return false;
         }
+      }
+
+      /* A run number off the reset broadcast, or off this tab's own record of
+         the last one it acted on — never anything else, so a corrupted or
+         hand-edited value reads as "nothing to act on" rather than a crash. */
+      function parseResetMarker(raw) {
+        if (typeof raw !== "string" || raw.trim() === "") return null;
+        var value = Number(raw);
+        return Number.isInteger(value) && value >= 0 ? value : null;
       }
 
       /* -------------------------------------------------------- the case state */
@@ -2594,73 +2618,40 @@
         });
       }
 
-      /* One item as one row of a list, not one card per screen: reason, document
-         and date on a single line, the finding under it, and the reply and the
-         decision on the lines below. Two open items should be readable without
-         scrolling past the first. A read-only fixture gets the same markup with
-         every control disabled and the note that says why (§5.4). */
-      function renderReviewItem(loan, item, position, total, note) {
-        var record = item.documentId ? loan.state.documents[item.documentId] : null;
-        var source = null;
-        (record ? record.messages : []).forEach(function (message) {
-          if (message.id === item.messageId) source = message;
-        });
-        var disabled = loan.readonly ? " disabled" : "";
-        var id = escapeHtml(item.id);
+      /* The row's only decision, for an item with no document to settle: read
+         her words on the Conversation tab and reply there, then dismiss the
+         notification once it is handled. No reply box and no select here —
+         there is nothing to choose between, and typing an answer belongs to
+         the conversation, not to the queue that pointed at it. */
+      function renderChatOnlyDecision(id, disabled) {
         return (
-          '<article class="review-item" data-review-item-id="' +
+          /* `review-queue-link`, not `review-item-open`: this one leaves the
+             drawer's own record for another tab entirely, same as the queue's
+             own "N awaiting your reply" link, rather than opening a document
+             record the way `review-item-open` normally does — and it sits
+             outside `review-decide` so the row's filled-button styling never
+             paints over what has to read as a link. */
+          '<button type="button" class="review-queue-link" data-assistant-action="conversation-tab">' +
+          text("lender.review.reply-in-chat") +
+          " →</button>" +
+          '<div class="review-decide">' +
+          '<button type="button" class="primary" data-review-action="decide" data-review-id="' +
           id +
-          '" data-review-document="' +
-          escapeHtml(item.documentId || "") +
-          '"><div class="review-item-heading">' +
-          /* Where this one sits in the queue, so a stack of items does not read
-             as one undifferentiated pile. On the same line as the reason now:
-             it is an index, and an index does not need a line of its own. */
-          (position && total > 1
-            ? '<span class="review-item-position">' +
-              text("lender.overview.queue-position", { position: position, total: total }) +
-              "</span>"
-            : "") +
-          "<strong>" +
-          text("review." + item.type) +
-          '</strong><span class="review-item-where">' +
-          escapeHtml(documentLabel(loan, item.documentId)) +
-          " · " +
-          escapeHtml(credit.formatDate(item.createdAt)) +
-          "</span>" +
-          /* The finding names the document; this is the way to it. Without it
-             the only route to the record behind an item was the documents tab
-             itself, found by leaving the queue that named the problem. */
-          (item.documentId
-            ? '<button type="button" class="review-item-open" data-notification-document="' +
-              escapeHtml(item.documentId) +
-              '">' +
-              text("lender.needs.open-document", {
-                document: t("doc." + item.documentId + ".name")
-              }) +
-              "</button>"
-            : "") +
-          "</div>" +
-          /* Her own words where there are any; the finding where there are not.
-             Never the item's type restated. */
-          (source
-            ? "<blockquote><strong>" +
-              escapeHtml(loan.borrowerName) +
-              "</strong><p>" +
-              escapeHtml(source.text) +
-              "</p></blockquote>"
-            : '<p class="review-item-detail">' +
-              escapeHtml(reviewItemDetail(loan, item)) +
-              "</p>") +
-          /* The condition this document carries, if it carries one — inside the
-             row, under the finding, above the reply. It used to be a row of its
-             own further down the same list, which named the document a second
-             time for a term that belongs to the first mention. */
-          (note || "") +
+          '" data-review-decision-value="resolve"' +
+          disabled +
+          ">" +
+          text("lender.review.mark-resolved") +
+          "</button></div>"
+        );
+      }
+
+      /* The row's decision when a document is actually behind it: the select
+         carries the verdict, the reply box carries the reason a send-back
+         needs, the condition field appears only for the one outcome that asks
+         for one, and one button commits whichever is on screen. */
+      function renderSettleableDecision(loan, item, id, disabled) {
+        return (
           '<div class="review-actions">' +
-          /* The label is carried for the field, not printed above it: at one row
-             high the placeholder is the visible label and a second copy of the
-             same words would be the noise this row exists to remove. */
           '<label class="sr-only" for="reply-' +
           id +
           '">' +
@@ -2676,7 +2667,7 @@
           disabled +
           "></textarea>" +
           "</div>" +
-          /* The condition field only exists for the one outcome that needs it,
+          /* The condition field only exists for the one outcome that requires it,
              and it is hidden until that outcome is picked rather than sitting
              there empty asking to be filled in. `hidden` and not `display:none`
              so it leaves the accessibility tree too. */
@@ -2729,7 +2720,81 @@
           disabled +
           ">" +
           text("lender.review.apply") +
-          "</button></div>" +
+          "</button></div>"
+        );
+      }
+
+      /* One item as one row of a list, not one card per screen: reason, document
+         and date on a single line, the finding under it, and the decision on
+         the lines below. Two open items should be readable without scrolling
+         past the first. A read-only fixture gets the same markup with every
+         control disabled and the note that says why (§5.4).
+         Never her own words: the row states what the case is waiting on — the
+         same sentence the header alert would give it — and nothing quoted from
+         her thread. Her words, and any reply to them, live on the Conversation
+         tab; a queue that also echoed her message was a second inbox reading
+         the same thread the first one already owned, and it is why a message
+         she had already been answered could still look like it was waiting. */
+      /* A message or a deadline is never a document's verdict, whatever the
+         document behind it happens to be doing — so these two always read
+         from the conversation rather than borrowing whichever decision the
+         document's own settleability would otherwise hand them. Everything
+         else still asks `reviewDecisionsFor`, since a document-exception or a
+         new upload with nothing settleable behind it (yet) has no verdict to
+         offer either. */
+      var CONVERSATION_ONLY_TYPES = ["borrower-message", "deed-deadline"];
+
+      function renderReviewItem(loan, item, position, total, note) {
+        var disabled = loan.readonly ? " disabled" : "";
+        var id = escapeHtml(item.id);
+        var chatOnly =
+          CONVERSATION_ONLY_TYPES.indexOf(item.type) !== -1 ||
+          reviewDecisionsFor(loan, item).indexOf("reply") !== -1;
+        return (
+          '<article class="review-item" data-review-item-id="' +
+          id +
+          '" data-review-document="' +
+          escapeHtml(item.documentId || "") +
+          '"><div class="review-item-heading">' +
+          /* Where this one sits in the queue, so a stack of items does not read
+             as one undifferentiated pile. On the same line as the reason now:
+             it is an index, and an index does not need a line of its own. */
+          (position && total > 1
+            ? '<span class="review-item-position">' +
+              text("lender.overview.queue-position", { position: position, total: total }) +
+              "</span>"
+            : "") +
+          "<strong>" +
+          text("review." + item.type) +
+          '</strong><span class="review-item-where">' +
+          escapeHtml(documentLabel(loan, item.documentId)) +
+          " · " +
+          escapeHtml(credit.formatDate(item.createdAt)) +
+          "</span>" +
+          /* The finding names the document; this is the way to it. Without it
+             the only route to the record behind an item was the documents tab
+             itself, found by leaving the queue that named the problem. */
+          (item.documentId
+            ? '<button type="button" class="review-item-open" data-notification-document="' +
+              escapeHtml(item.documentId) +
+              '">' +
+              text("lender.needs.open-document", {
+                document: t("doc." + item.documentId + ".name")
+              }) +
+              "</button>"
+            : "") +
+          "</div>" +
+          '<p class="review-item-detail">' +
+          escapeHtml(reviewItemDetail(loan, item)) +
+          "</p>" +
+          /* The condition this document carries, if it carries one — inside the
+             row, under the finding, above the decision. It used to be a row of
+             its own further down the same list, which named the document a
+             second time for a term that belongs to the first mention. */
+          (note || "") +
+          (chatOnly
+            ? renderChatOnlyDecision(id, disabled)
+            : renderSettleableDecision(loan, item, id, disabled)) +
           (loan.readonly ? '<p class="readonly-note">' + text("common.readonly-loan") + "</p>" : "") +
           "</article>"
         );
@@ -5389,11 +5454,15 @@
       /* The collapsed assistant: a mark in the corner, with the count of what is
          waiting on it so the officer knows there is something inside before she
          opens it. Once the rail is up the rail carries its own collapse control,
-         so the launcher is not on screen to sit on top of it. */
+         so the launcher is not on screen to sit on top of it.
+         Rendered whether the rail is open or not, `hidden` rather than left
+         out — the toggle handler flips both elements' `hidden` in place, with
+         no re-render, so folding the assistant away and back never throws out
+         a half-typed question or the file underneath it (§toggle-assistant). */
       function renderAssistantLauncher(loan, view) {
-        if (view && view.assistantOpen) return "";
         return (
           '<button type="button" class="assistant-launcher"' +
+          (view && view.assistantOpen ? " hidden" : "") +
           ' data-workspace-action="toggle-assistant" aria-expanded="false"' +
           ' aria-controls="assistant-rail" aria-label="' +
           text("lender.assistant.open-aria") +
@@ -5965,6 +6034,33 @@
           liveStates[data.caseId] = opened.state;
           if (data.caseId === CASE_ID) primaryOpened = opened;
         });
+
+        /* A restart on the borrower page reaches this tab even if it is
+           already open on its own copy of the case (§ her place on the page,
+           borrower.html): the run number it broadcasts there is compared
+           against the last one this tab acted on, and a higher one means the
+           conversation it names is gone and this desk's copy of the primary
+           case should be too — the same reset a "Reset case" click already
+           gives it, just triggered from the other surface. */
+        function pendingCaseReset() {
+          var marker = parseResetMarker(readRaw(bridgeStorage(), CASE_RESET_KEY).value);
+          if (marker === null) return false;
+          var seen = parseResetMarker(readRaw(caseStorage(), RESET_APPLIED_KEY).value);
+          return seen === null || marker > seen;
+        }
+
+        function applyCaseReset() {
+          var marker = parseResetMarker(readRaw(bridgeStorage(), CASE_RESET_KEY).value);
+          if (marker === null) return null;
+          writeRaw(caseStorage(), RESET_APPLIED_KEY, String(marker));
+          return resetCase({ caseData: liveCaseData(CASE_ID) });
+        }
+
+        if (pendingCaseReset()) {
+          var initialReset = applyCaseReset();
+          if (initialReset && initialReset.changed) liveStates[CASE_ID] = initialReset.state;
+        }
+
         var viewState = assign(assign({}, DEFAULT_VIEW_STATE), parseCaseHash(locationLike.hash));
 
         function loans() {
@@ -6072,6 +6168,57 @@
           /* "Open the document" finishes here, one render later: the record is
              unfolded, brought into view and given the focus, so the comparison
              and the override are what the officer is looking at. */
+          if (viewState.focusDocumentId && root) {
+            var wanted = root.querySelector(
+              'details[data-document-id="' + viewState.focusDocumentId + '"]'
+            );
+            viewState.focusDocumentId = null;
+            if (wanted) {
+              wanted.open = true;
+              if (wanted.scrollIntoView) wanted.scrollIntoView({ block: "start" });
+              var summary = wanted.querySelector("summary");
+              if (summary && summary.focus) summary.focus();
+            }
+          }
+          return list;
+        }
+
+        /* Switching tabs — or anything else that is purely about the drawer —
+           does not touch the board underneath: nothing a tab shows was ever
+           drawn from the board's own count, card or filter state. Rebuilding
+           the board's roughly one thousand nodes anyway, just to swap which
+           tab's markup the drawer prints, is where a tab click ends up looking
+           like the page reloading. This replaces only the two top-level nodes
+           `renderWorkspace` produces — same scroll and focus handling as
+           `render()` itself, just aimed at a narrower target — and leaves the
+           board's nodes, and the listeners already on them, standing. */
+        function renderWorkspaceOnly() {
+          var list = loans();
+          var loan = selectedLoan(list);
+          setMoneyUnit(viewState.currency);
+          if (root) {
+            var oldBackdrop = root.querySelector(".workspace-backdrop");
+            if (oldBackdrop) oldBackdrop.remove();
+            var oldAside = document.getElementById("case-workspace");
+            if (oldAside) oldAside.remove();
+            var html = renderWorkspace(loan, viewState);
+            if (html) {
+              var wrapper = document.createElement("div");
+              wrapper.innerHTML = html;
+              while (wrapper.firstChild) root.appendChild(wrapper.firstChild);
+            }
+          }
+          if (document.body) document.body.classList.toggle("workspace-open", Boolean(loan));
+          var container = document.getElementById("case-workspace");
+          if (container) {
+            var current = panel();
+            if (current) current.scrollTop = panelScroll;
+            if (!container.contains(document.activeElement)) {
+              var tab = document.getElementById("tab-" + knownTab(viewState.activeTab));
+              if (tab) tab.focus();
+            }
+          }
+          bindWorkspace(list);
           if (viewState.focusDocumentId && root) {
             var wanted = root.querySelector(
               'details[data-document-id="' + viewState.focusDocumentId + '"]'
@@ -6223,17 +6370,24 @@
              no state to write: this control only moves the view. */
           /* The assistant folds down into its launcher and comes back up from
              it. Nothing about the case changes, so the panel is shown or hidden
-             and the launcher relabelled in place — a re-render here would throw
-             away a half-typed question. */
+             and the launcher relabelled in place — both elements are always on
+             the page now (§renderAssistantLauncher), so the toggle is a plain
+             `hidden` flip rather than a re-render that would throw away a
+             half-typed question, reset whichever tab was open, and rebuild the
+             board underneath for a change the board never had anything to do
+             with. */
           root.querySelectorAll('[data-workspace-action="toggle-assistant"]').forEach(
             function (button) {
               button.addEventListener("click", function () {
                 viewState.assistantOpen = !viewState.assistantOpen;
-                render();
+                var rail = document.getElementById("assistant-rail");
+                var launcher = root.querySelector(".assistant-launcher");
+                if (rail) rail.hidden = !viewState.assistantOpen;
+                if (launcher) launcher.hidden = viewState.assistantOpen;
                 /* Focus lands on whichever control the toggle turned into: the
                    rail's own collapse when it opens, the launcher when it
-                   folds away. The other one is inside the hidden rail, so it
-                   is named rather than found by the shared attribute. */
+                   folds away. The other one is now hidden, so it is named
+                   rather than found by the shared attribute. */
                 var again = root.querySelector(
                   viewState.assistantOpen ? ".assistant-collapse" : ".assistant-launcher"
                 );
@@ -6315,9 +6469,10 @@
               /* A new tab starts at its own top. */
               panelScroll = 0;
               syncHash();
-              render();
-              var tab = document.getElementById("tab-" + viewState.activeTab);
-              if (tab) tab.focus();
+              /* The board plays no part in which tab is open, so only the
+                 drawer needs to move (§renderWorkspaceOnly) — it focuses the
+                 new tab itself once its markup is in. */
+              renderWorkspaceOnly();
             });
           });
           /* The condition field follows the select: it appears for the one
@@ -6347,7 +6502,10 @@
             button.addEventListener("click", function () {
               var id = button.getAttribute("data-review-id");
               var picker = root.querySelector('[data-review-decision="' + id + '"]');
-              var decision = picker ? picker.value : "reply";
+              /* The chat-only row carries its one decision on the button
+                 itself — there is no select to read it from. */
+              var decision =
+                button.getAttribute("data-review-decision-value") || (picker ? picker.value : "reply");
               var box = root.querySelector('[data-review-reply="' + id + '"]');
               var body = box ? box.value : "";
               var wording = root.querySelector('[data-review-condition="' + id + '"]');
@@ -6782,7 +6940,12 @@
            ever carries the primary case's conversation — the second live case
            has no borrower page to write it. */
         function onStorage(event) {
-          if (!event || event.key !== MESSAGE_BRIDGE_KEY) return;
+          if (!event) return;
+          if (event.key === CASE_RESET_KEY) {
+            if (pendingCaseReset()) apply(CASE_ID, applyCaseReset());
+            return;
+          }
+          if (event.key !== MESSAGE_BRIDGE_KEY) return;
           apply(
             CASE_ID,
             bridgeAbsorb(liveStates[CASE_ID], {
@@ -6827,6 +6990,8 @@
         CASE_ID: CASE_ID,
         CASE_STORAGE_KEY: CASE_STORAGE_KEY,
         MESSAGE_BRIDGE_KEY: MESSAGE_BRIDGE_KEY,
+        CASE_RESET_KEY: CASE_RESET_KEY,
+        RESET_APPLIED_KEY: RESET_APPLIED_KEY,
         BRIDGE_LIMIT: BRIDGE_LIMIT,
         BRIDGE_ROLE: BRIDGE_ROLE,
         STAGE_COLUMNS: STAGE_COLUMNS,
@@ -6958,6 +7123,7 @@
         approveWithConditions: approveWithConditions,
         signApproval: signApproval,
         resetCase: resetCase,
+        parseResetMarker: parseResetMarker,
 
         /* The delayed-arrival seam, shared in shape with Task 7's borrower page. */
         later: later,

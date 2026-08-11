@@ -389,7 +389,7 @@ test("addresses, filenames and message bodies wrap instead of overflowing", () =
     "lender.html": {
       address: [".workspace-header h2", ".loan-borrower"],
       filename: [".document-title small", ".history-row strong"],
-      message: [".record-message p", ".review-item blockquote"]
+      message: [".record-message p", ".review-item-detail"]
     },
     "borrower.html": {
       address: [".rail-case", ".drawer-header h2"],

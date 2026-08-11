@@ -314,7 +314,7 @@ test("a read-only fixture's review controls are disabled and say why", () => {
   assert.equal(/data-case-action="[^"]+"(?![^>]* disabled)/.test(bar), false);
 });
 
-test("a borrower message item quotes the message it is about", () => {
+test("a borrower message item names the notification, not her words, and points at the conversation", () => {
   const withMessage = workspace.sendBorrowerMessage(
     openingState(),
     "tax-folder",
@@ -324,8 +324,26 @@ test("a borrower message item quotes the message it is about", () => {
   const loan = loanFor(withMessage);
   const item = plain(workspace.openReviewItems(loan.state)).find(entry => entry.type === "borrower-message");
   const markup = lender.renderReviewItem(loan, item);
-  assert.match(markup, /<blockquote>/);
-  assert.ok(markup.includes(lender.escapeHtml("Is the page 1 upload enough or do I resend the whole folder?")));
+  /* The queue states what is waiting, in the case's own words — never a
+     quote of hers. Reading and answering her message happens on the
+     Conversation tab, so a message already answered there can never look
+     like it is still waiting here too. */
+  assert.equal(markup.includes("<blockquote>"), false);
+  assert.equal(
+    markup.includes("Is the page 1 upload enough or do I resend the whole folder?"),
+    false
+  );
+  assert.ok(markup.includes(shown("lender.notifications.borrower-message", { borrower: "Javiera Soto Miranda" })));
+  assert.match(markup, /<button type="button" class="review-queue-link" data-assistant-action="conversation-tab">/);
+  assert.ok(markup.includes(shown("lender.review.reply-in-chat")));
+  /* No reply box and no decision select — one action, one button. */
+  assert.equal(markup.includes("<textarea"), false);
+  assert.equal(markup.includes("<select"), false);
+  assert.match(
+    markup,
+    new RegExp(`<button type="button" class="primary" data-review-action="decide" data-review-id="${item.id}" data-review-decision-value="resolve">`)
+  );
+  assert.ok(markup.includes(shown("lender.review.mark-resolved")));
 });
 
 /* ================================================== resolving and replying */
