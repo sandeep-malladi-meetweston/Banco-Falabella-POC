@@ -125,6 +125,26 @@ test("the drawer is a labelled modal dialog over a backdrop", () => {
   assert.equal(markup.includes("draggable"), false);
 });
 
+test("a live case's header links to its Google Drive folder, right beside the notifications alert", () => {
+  const loan = loanFor();
+  assert.equal(loan.driveUrl, "https://drive.google.com/drive/folders/1eFFTCGNeIAmL_9II0XLSEyhwF00DEqp_");
+  const markup = lender.renderWorkspace(loan, uiState({}));
+  assert.match(
+    markup,
+    /<button type="button" class="needs-alert"[^]*?<\/button><a class="workspace-drive-link" href="https:\/\/drive\.google\.com\/drive\/folders\/1eFFTCGNeIAmL_9II0XLSEyhwF00DEqp_" target="_blank" rel="noopener noreferrer"/
+  );
+  assert.ok(markup.includes(shown("lender.workspace.drive-aria", { case: loan.caseId })));
+
+  /* A read-only fixture has no folder, so nothing renders for it — not even
+     an empty link. */
+  const readonly = fixtureLoan("H-2026-08402");
+  assert.equal(readonly.driveUrl, undefined);
+  assert.equal(
+    lender.renderWorkspace(readonly, uiState({})).includes("workspace-drive-link"),
+    false
+  );
+});
+
 test("the header chips name the stage, the amount, the guarantee and the open work", () => {
   const markup = lender.renderWorkspace(loanFor(), uiState({}));
   assert.ok(markup.includes(shown("stage.gathering-documents")));

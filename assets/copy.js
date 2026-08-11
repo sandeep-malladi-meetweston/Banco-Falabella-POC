@@ -222,8 +222,6 @@
       "lender.card.pending-inspection": "Inspection pending",
       "lender.card.pending-both": "Title + inspection pending",
       "lender.card.pending-aria": "Flagged: {what}.",
-      "lender.card.drive": "Case files",
-      "lender.card.drive-aria": "Open case {case} files in Google Drive, in a new tab",
 
       "lender.substatus.documents-progress": "{received} of {total} documents",
       "lender.substatus.submitted-today": "Submitted today",
@@ -313,6 +311,7 @@
       "lender.workspace.borrower-line": "{borrower}",
       "lender.workspace.close-aria": "Close case details",
       "lender.workspace.expand-aria": "Expand case details to full screen",
+      "lender.workspace.drive-aria": "Open case {case} files in Google Drive, in a new tab",
       "lender.workspace.chip-guarantee": "FOGAES guarantee",
       "lender.workspace.chip-needs-review": "Notifications · {count}",
 
@@ -1501,8 +1500,6 @@
       "lender.card.pending-inspection": "Inspección pendiente",
       "lender.card.pending-both": "Título + inspección pendientes",
       "lender.card.pending-aria": "Marcado: {what}.",
-      "lender.card.drive": "Archivos del caso",
-      "lender.card.drive-aria": "Abrir los archivos del caso {case} en Google Drive, en una pestaña nueva",
 
       "lender.substatus.documents-progress": "{received} de {total} documentos",
       "lender.substatus.submitted-today": "Ingresada hoy",
@@ -1575,6 +1572,7 @@
       "lender.workspace.borrower-line": "{borrower}",
       "lender.workspace.close-aria": "Cerrar el detalle del caso",
       "lender.workspace.expand-aria": "Ampliar el detalle del caso a pantalla completa",
+      "lender.workspace.drive-aria": "Abrir los archivos del caso {case} en Google Drive, en una pestaña nueva",
       "lender.workspace.chip-guarantee": "Garantía FOGAES",
       "lender.workspace.chip-needs-review": "Notificaciones · {count}",
 

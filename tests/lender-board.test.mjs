@@ -153,29 +153,18 @@ test("a loan with no deed date renders no deed line", () => {
   assert.equal(markup.includes("Closing "), false);
 });
 
-test("a live case's card entry links to its Google Drive folder in a new tab", () => {
+test("a live loan carries its Google Drive folder, but the board card stays plain", () => {
   const javiera = findLoan("H-2026-08415");
   const ignacio = findLoan("H-2026-08377");
   assert.equal(javiera.driveUrl, "https://drive.google.com/drive/folders/1eFFTCGNeIAmL_9II0XLSEyhwF00DEqp_");
   assert.equal(ignacio.driveUrl, "https://drive.google.com/drive/folders/1vERlY5gxpbj1_WLEWEKb8mBIM4h2N5Iq");
 
-  const entry = lender.renderLoanCardEntry(javiera);
-  assert.match(entry, /^<div class="loan-card-shell">/);
-  /* The card itself is untouched — the link is a sibling, not nested inside
-     the button, so it stays its own keyboard-reachable control. */
-  assert.equal(entry.includes(lender.renderLoanCard(javiera)), true);
-  assert.match(
-    entry,
-    /<a class="drive-link" href="https:\/\/drive\.google\.com\/drive\/folders\/1eFFTCGNeIAmL_9II0XLSEyhwF00DEqp_" target="_blank" rel="noopener noreferrer"/
-  );
-  assert.ok(entry.includes(t("lender.card.drive-aria", { case: "H-2026-08415" })));
-  assert.ok(entry.includes(t("lender.card.drive")));
-
-  /* A read-only fixture has no folder, so renderLoanCardEntry falls back to
-     the bare card exactly as renderLoanCard produces it. */
-  const fixture = findLoan("H-2026-08402");
-  assert.equal(fixture.driveUrl, undefined);
-  assert.equal(lender.renderLoanCardEntry(fixture), lender.renderLoanCard(fixture));
+  /* The link lives in the opened case's header, beside the notifications
+     alert (see lender-workspace.test.mjs) — the board card itself never
+     mentions Drive, live case or fixture alike. */
+  const markup = lender.renderLoanCard(javiera);
+  assert.equal(markup.includes("drive"), false);
+  assert.equal(markup.includes("Drive"), false);
 });
 
 test("a borrower name that looks like markup is escaped, not injected", () => {
