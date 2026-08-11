@@ -505,6 +505,53 @@ test("a lender reply round-trips back into the WhatsApp thread", () => {
   assert.ok(markup.includes(t("borrower.chat.team-name")));
 });
 
+test("a lender reply round-trips onto the document's own review page, not just the WhatsApp thread", () => {
+  freshBridges();
+  const storage = memoryStorage();
+
+  const played = borrower.runScript();
+  /* Sent from the tax folder's own review page, not the ambient composer — so
+     it must be filed against tax-folder regardless of whatever document the
+     scripted narrative last touched. */
+  const sent = borrower.sendDrawerMessage(played, "tax-folder", "Is page 1 enough now?", {
+    storage: storage
+  });
+  assert.equal(sent.changed, true);
+
+  const absorbed = lender.bridgeAbsorb(lender.FALLBACK_CASE.state, { storage: storage });
+  const item = openOf(lender, absorbed.state, "borrower-message")[0];
+  assert.equal(item.documentId, "tax-folder");
+
+  const replied = lender.commitReply(absorbed.state, item.id, "Yes, page 1 is legible now.", {
+    timestamp: stamp(20),
+    storage: storage,
+    borrowerName: "Javiera Soto Miranda"
+  });
+  assert.equal(replied.changed, true);
+
+  const received = borrower.bridgeAbsorb(sent.viewState, { storage: storage });
+  assert.equal(received.changed, true);
+
+  const documents = plain(received.viewState).state.documents;
+  const taxMessages = documents["tax-folder"].messages;
+  const last = taxMessages[taxMessages.length - 1];
+  assert.equal(last.author, "lender");
+  assert.equal(last.text, "Yes, page 1 is legible now.");
+  /* Filed on the document it actually answers — a reply about the tax folder
+     must not also appear on an unrelated document's own page. */
+  assert.ok(
+    !documents["title-certificate"].messages.some(message => message.text === last.text)
+  );
+
+  const opened = borrower.setDrawerTab(
+    borrower.openDocument(received.viewState, "tax-folder"),
+    "assistant"
+  );
+  const markup = borrower.renderDrawer(opened);
+  assert.ok(markup.includes(borrower.escapeHtml(last.text)));
+  assert.ok(markup.includes(t("borrower.drawer.tab-assistant")));
+});
+
 test("neither side absorbs its own messages", () => {
   freshBridges();
   const storage = memoryStorage();

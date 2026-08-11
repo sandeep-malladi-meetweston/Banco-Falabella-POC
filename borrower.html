@@ -308,7 +308,7 @@
     .thread-body{flex:1;overflow-y:auto;padding:18px;background:#eef1ec;scroll-behavior:smooth}
     .day-marker{display:block;margin:0 auto 16px;width:max-content;padding:4px 11px;border-radius:8px;background:#fff;color:var(--slate);font:600 10px var(--mono);letter-spacing:.06em}
     .bubble{position:relative;max-width:min(78%,52ch);margin:0 0 12px;padding:11px 13px;border-radius:12px;background:#fff;box-shadow:0 1px 1px rgba(24,33,43,.08);overflow-wrap:anywhere}
-    .bubble.assistant{border-top-left-radius:3px}
+    .bubble.assistant,.bubble.lender{border-top-left-radius:3px}
     .bubble.borrower{margin-left:auto;background:#dcf3dd;border-top-right-radius:3px}
     /* A message that has just arrived slides in; the ones already read do not
        re-animate, because the paint only marks what is new. */
@@ -386,6 +386,9 @@
     .drawer-tabs button:hover{color:var(--ink)}
     .drawer-tabs button[aria-selected="true"]{border-bottom-color:var(--brand);color:var(--ink)}
     .drawer-panel{flex:1;overflow:auto;padding:22px 24px 40px}
+    .drawer-thread{margin-top:14px}
+    .drawer-thread .bubble{max-width:100%}
+    .composer.drawer-composer{border:1px solid var(--rule);border-radius:10px;margin-top:14px}
     .review-banner{padding:16px;border:1px solid var(--rule);border-radius:10px;background:var(--shell)}
     .review-banner h3{margin:0;font:600 15px var(--display)}
     .review-banner p{margin:6px 0 0;color:var(--slate);max-width:62ch}
@@ -1739,12 +1742,25 @@
         if (!fresh.length) {
           return { changed: false, viewState: viewState, absorbed: [], announcement: null };
         }
+        /* Filed on the document it actually answers, the same way the desk
+           files her messages — so a reply written from a document's own
+           review page arrives back on that document, not just in the
+           WhatsApp thread everyone sees regardless of which document they
+           asked about. */
+        var state = viewState.state;
+        fresh.forEach(function (entry) {
+          var documentId =
+            workspace.DOCUMENT_IDS.indexOf(entry.documentId) === -1
+              ? workspace.DOCUMENT_IDS[0]
+              : entry.documentId;
+          state = workspace.sendLenderMessage(state, documentId, entry.text, entry.timestamp);
+        });
         var arriving = fresh.map(function (entry) {
           return { author: "assistant", text: entry.text };
         });
         return {
           changed: true,
-          viewState: fork(viewState, { thread: viewState.thread.concat(arriving) }),
+          viewState: fork(viewState, { state: state, thread: viewState.thread.concat(arriving) }),
           absorbed: fresh,
           announcement: { key: "borrower.chat.received", params: { count: fresh.length } }
         };
@@ -1894,9 +1910,46 @@
         };
       }
 
+      /**
+       * Her half of the loan assistant on a document's own review page: filed
+       * against that one document, not the WhatsApp thread on the documents
+       * page, so it raises the same review item on the desk that a message
+       * from the main thread would. No scripted reply follows it — the desk's
+       * answer is a real one, written back through `commitReply` or the
+       * conversation box on the case, and it arrives here over the bridge.
+       */
+      function sendDrawerMessage(viewState, documentId, raw, options) {
+        var body = String(raw === null || raw === undefined ? "" : raw).trim();
+        if (!body) {
+          return {
+            changed: false,
+            viewState: viewState,
+            bridged: null,
+            announcement: { key: "borrower.chat.blank" }
+          };
+        }
+        var timestamp = beatTimestamp(SCRIPT.length + viewState.thread.length + 1);
+        var state = workspace.sendBorrowerMessage(viewState.state, documentId, body, timestamp);
+        var bridged = null;
+        if (options && options.storage !== undefined) {
+          bridged = bridgeSend(options.storage, {
+            from: BRIDGE_ROLE,
+            text: body,
+            timestamp: timestamp,
+            documentId: documentId
+          }).ok;
+        }
+        return {
+          changed: true,
+          viewState: fork(viewState, { state: state }),
+          bridged: bridged,
+          announcement: { key: "borrower.chat.sent" }
+        };
+      }
+
       /* =========================================================== the drawer */
 
-      var DRAWER_TABS = ["review", "document", "history"];
+      var DRAWER_TABS = ["review", "assistant", "document", "history"];
 
       /* Nine documents, and the fields the review compared on each — the same
          field sets the lender's document records show, because it is the same
@@ -3265,7 +3318,43 @@
         );
       }
 
+      /**
+       * The conversation this document actually carries — `record.messages`,
+       * the same list the lender's desk reads and replies to, not the WhatsApp
+       * thread on the documents page. A message sent here is filed against
+       * this document specifically, which is what lets a reply from the desk
+       * land back on the one document it was about.
+       */
+      function renderDrawerAssistant(documentId, record) {
+        var messages = record.messages || [];
+        return (
+          '<p class="panel-lead">' + text("borrower.drawer.assistant-lead") + "</p>" +
+          '<div class="drawer-thread">' +
+          (messages.length
+            ? messages.map(renderBubble).join("")
+            : '<p class="panel-lead">' + text("borrower.drawer.assistant-empty") + "</p>") +
+          "</div>" +
+          '<form class="composer drawer-composer" id="drawer-composer" data-document-id="' +
+          escapeHtml(documentId) +
+          '">' +
+          '<label class="sr-only" for="drawer-composer-input">' +
+          text("borrower.drawer.assistant-placeholder") +
+          "</label>" +
+          '<input type="text" id="drawer-composer-input" name="message" autocomplete="off" placeholder="' +
+          text("borrower.drawer.assistant-placeholder") +
+          '">' +
+          '<button type="submit" id="drawer-composer-send">' +
+          icon("send", { fill: true }) +
+          '<span class="sr-only">' +
+          text("borrower.chat.send") +
+          "</span></button></form>"
+        );
+      }
+
       function renderDrawerPanel(viewState, documentId, record, checks, banner) {
+        if (viewState.drawerTab === "assistant") {
+          return renderDrawerAssistant(documentId, record);
+        }
         if (viewState.drawerTab === "document") {
           return (
             renderScanPage(documentId, record) +
@@ -3641,11 +3730,14 @@
         var composer = document.getElementById("composer-input");
         var draft = composer ? composer.value : "";
         var hadFocus = composer && document.activeElement === composer;
+        var drawerComposer = document.getElementById("drawer-composer-input");
+        var drawerDraft = drawerComposer ? drawerComposer.value : "";
+        var drawerHadFocus = drawerComposer && document.activeElement === drawerComposer;
         /* Typing into the simulator repaints the page on every keystroke, so the
            control she is typing in has to come back focused, with the caret
            exactly where she left it. */
         var active = document.activeElement;
-        var activeId = active && active.id && active !== composer ? active.id : null;
+        var activeId = active && active.id && active !== composer && active !== drawerComposer ? active.id : null;
         var caret = null;
         if (activeId && typeof active.selectionStart === "number") {
           caret = { start: active.selectionStart, end: active.selectionEnd };
@@ -3661,6 +3753,11 @@
         if (next) {
           next.value = draft;
           if (hadFocus) next.focus();
+        }
+        var nextDrawer = document.getElementById("drawer-composer-input");
+        if (nextDrawer) {
+          nextDrawer.value = drawerDraft;
+          if (drawerHadFocus) nextDrawer.focus();
         }
         if (activeId) {
           var refocus = document.getElementById(activeId);
@@ -4161,7 +4258,28 @@
         restoreFocusTo = null;
       }
 
+      function onDrawerSubmit(event) {
+        event.preventDefault();
+        var documentId = event.target.dataset.documentId;
+        var input = document.getElementById("drawer-composer-input");
+        var result = sendDrawerMessage(view, documentId, input ? input.value : "", {
+          storage: bridgeStorage()
+        });
+        if (result.changed && input) input.value = "";
+        update(result.viewState);
+        announce(result.announcement.key, result.announcement.params);
+        /* It reached the document's record either way; it may not have reached
+           the other tab. */
+        if (result.bridged === false) announceViewOnly();
+        var refocus = document.getElementById("drawer-composer-input");
+        if (refocus) refocus.focus();
+      }
+
       function onSubmit(event) {
+        if (event.target && event.target.id === "drawer-composer") {
+          onDrawerSubmit(event);
+          return;
+        }
         if (!event.target || event.target.id !== "composer") return;
         event.preventDefault();
         var input = document.getElementById("composer-input");
@@ -4282,6 +4400,7 @@
         renderThread: renderThread,
         renderChecklist: renderChecklist,
         renderDrawer: renderDrawer,
+        renderDrawerAssistant: renderDrawerAssistant,
 
         goToPhase: goToPhase,
         assistantReplyKey: assistantReplyKey,
@@ -4294,6 +4413,7 @@
         trapFocus: trapFocus,
         handleDrawerKeydown: handleDrawerKeydown,
         sendBorrowerMessage: sendBorrowerMessage,
+        sendDrawerMessage: sendDrawerMessage,
 
         emptyForm: emptyForm,
         demoForm: demoForm,

@@ -48,26 +48,25 @@ test("the three metric tiles carry spec §5.2's labels and formatted values", ()
 
 /* ============================================================ the navigation */
 
-test("the five nav filters carry aria-pressed and their own counts", () => {
+test("the nav filters mirror the board's stage columns one for one", () => {
   const loans = lender.buildPortfolio();
-  const markup = lender.renderNavigation(loans, "needs-review", NOW);
-  for (const view of ["pipeline", "needs-review", "signing-soon", "disbursed", "closed-archived"]) {
-    assert.match(markup, new RegExp(`data-view="${view}"`), `no nav filter for ${view}`);
-    assert.ok(markup.includes(t(`lender.nav.${view}`)), `no label for ${view}`);
+  const columns = plain(lender.STAGE_COLUMNS);
+  const markup = lender.renderNavigation(loans, columns[2].id);
+  for (const column of columns) {
+    assert.match(markup, new RegExp(`data-view="${column.id}"`), `no nav filter for ${column.id}`);
+    assert.ok(markup.includes(t(column.labelKey)), `no label for ${column.id}`);
   }
-  assert.match(markup, /data-view="needs-review"[^>]*aria-pressed="true"/);
-  assert.match(markup, /data-view="pipeline"[^>]*aria-pressed="false"/);
-  /* Every count is the count filterLoans gives for that view. */
-  const count = view => plain(lender.filterLoans(loans, { view }, NOW)).length;
-  assert.match(markup, new RegExp(`data-view="pipeline"[\\s\\S]*?<span>${count("pipeline")}</span>`));
-  assert.match(
-    markup,
-    new RegExp(`data-view="needs-review"[\\s\\S]*?<span>${count("needs-review")}</span>`)
-  );
-  assert.equal(count("needs-review"), 4);
-  /* Needs review pairs its colour with the glyph and the count (§9). */
-  assert.match(markup, /data-view="needs-review"[^>]*class="[^"]*attention/);
-  assert.match(markup, /◆/);
+  assert.match(markup, new RegExp(`data-view="${columns[2].id}"[^>]*aria-pressed="true"`));
+  assert.match(markup, new RegExp(`data-view="${columns[0].id}"[^>]*aria-pressed="false"`));
+  /* Every count is filterLoans' count for that stage — the same number the
+     board itself shows at the top of that column. */
+  const count = view => plain(lender.filterLoans(loans, { view })).length;
+  for (const column of columns) {
+    assert.match(
+      markup,
+      new RegExp(`data-view="${column.id}"[\\s\\S]*?<span>${count(column.id)}</span>`)
+    );
+  }
 });
 
 /* =============================================================== the toolbar */
@@ -217,12 +216,14 @@ test("the page is topbar, nav, heading, metrics, toolbar and board", () => {
   assert.equal(markup.match(/class="stage-column"/g).length, 6);
   assert.equal(markup.match(/data-case-id=/g).length, 12);
   assert.equal(markup.includes("draggable"), false);
-  /* The heading names the current view. */
+  /* The heading names the current view: "Pipeline" unfiltered, or the stage's
+     own name once a nav filter narrows the board to one column. */
   assert.ok(markup.includes(t("lender.nav.pipeline")));
+  const disbursedColumn = plain(lender.STAGE_COLUMNS).find(column => column.id === "disbursed");
   assert.ok(
     lender
-      .renderPortfolioPage(loans, viewState({ view: "signing-soon" }), NOW)
-      .includes(t("lender.nav.signing-soon"))
+      .renderPortfolioPage(loans, viewState({ view: "disbursed" }), NOW)
+      .includes(t(disbursedColumn.labelKey))
   );
 });
 

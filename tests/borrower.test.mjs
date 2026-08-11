@@ -463,11 +463,56 @@ test("the drawer is a labelled modal dialog with tabs", () => {
   assert.match(markup, /aria-labelledby="borrower-drawer-title"/);
   assert.match(markup, /<h2 id="borrower-drawer-title">/);
   assert.match(markup, /role="tablist"/);
-  assert.equal((markup.match(/role="tab"/g) || []).length, 3);
+  assert.equal((markup.match(/role="tab"/g) || []).length, 4);
   assert.ok(markup.includes(shown("borrower.drawer.tab-review")));
+  assert.ok(markup.includes(shown("borrower.drawer.tab-assistant")));
   assert.ok(markup.includes(shown("borrower.drawer.tab-document")));
   assert.ok(markup.includes(shown("borrower.drawer.tab-history")));
   assert.match(markup, /aria-selected="true"/);
+});
+
+test("the loan assistant tab is empty until this document has a message on it", () => {
+  const opened = borrower.setDrawerTab(
+    borrower.openDocument(finished(), "national-id"),
+    "assistant"
+  );
+  const markup = borrower.renderDrawer(opened);
+  assert.ok(markup.includes(shown("borrower.drawer.assistant-empty")));
+  assert.ok(markup.includes('id="drawer-composer"'));
+  assert.ok(markup.includes('data-document-id="national-id"'));
+});
+
+test("sending from the loan assistant tab files the message on that document, not the ambient thread", () => {
+  const view = finished();
+  const sent = borrower.sendDrawerMessage(view, "payslips", "Is anything else needed here?");
+
+  assert.equal(sent.changed, true);
+  const documents = plain(sent.viewState).state.documents;
+  assert.equal(documents.payslips.messages.length, 1);
+  assert.equal(documents.payslips.messages[0].author, "borrower");
+  assert.equal(documents.payslips.messages[0].text, "Is anything else needed here?");
+  /* The scripted narrative's thread is untouched — this is the document's own
+     channel, not a second way to talk to the ambient composer. */
+  assert.deepEqual(plain(sent.viewState).thread, plain(view).thread);
+
+  const open = openItems(sent.viewState).filter(item => item.type === "borrower-message");
+  assert.equal(open.length, 1);
+  assert.equal(open[0].documentId, "payslips");
+
+  const opened = borrower.setDrawerTab(
+    borrower.openDocument(sent.viewState, "payslips"),
+    "assistant"
+  );
+  const markup = borrower.renderDrawer(opened);
+  assert.ok(markup.includes(borrower.escapeHtml("Is anything else needed here?")));
+});
+
+test("a blank message from the loan assistant tab does nothing", () => {
+  const view = finished();
+  const result = borrower.sendDrawerMessage(view, "payslips", "   ");
+  assert.equal(result.changed, false);
+  assert.equal(result.viewState, view);
+  assert.deepEqual(plain(result.announcement), { key: "borrower.chat.blank" });
 });
 
 test("the drawer shows the title certificate comparison with the folio cited", () => {

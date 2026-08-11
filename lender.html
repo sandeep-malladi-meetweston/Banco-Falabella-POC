@@ -1631,8 +1631,7 @@
               return PIPELINE_STAGES.indexOf(loan.stage) !== -1;
             })
           ),
-          /* How many cases have something waiting — what the nav filter narrows
-             to, so the filter and this number agree. */
+          /* How many cases have something waiting, regardless of stage. */
           needsReviewCount: loans.filter(function (loan) {
             return openCount(loan) > 0;
           }).length,
@@ -1653,15 +1652,16 @@
 
       /* =============================================== filters, sorts, grouping */
 
-      /* The five nav views of §5.1. `pipeline` is the whole board — the six
-         columns are the pipeline — and an unrecognised view narrows nothing, so
-         a stale hash or a typo can never blank the board. */
-      function matchesView(loan, view, now) {
-        if (view === "needs-review") return openCount(loan) > 0;
-        if (view === "signing-soon") return isSigningSoon(loan, now);
-        if (view === "disbursed") return loan.stage === workspace.STAGES.DISBURSED;
-        if (view === "closed-archived") return loan.stage === workspace.STAGES.CLOSED;
-        return true;
+      /* The nav is the seven-stage board, one filter per column, so a click in
+         the nav and a glance at the board always agree. `pipeline` is the
+         default, unfiltered view — it names no column, so nothing in the nav
+         is pressed for it — and an unrecognised view narrows nothing, so a
+         stale hash or a typo can never blank the board. */
+      function matchesView(loan, view) {
+        var isStageView = STAGE_COLUMNS.some(function (column) {
+          return column.id === view;
+        });
+        return isStageView ? loan.stage === view : true;
       }
 
       function matchesQuery(loan, query) {
@@ -1670,14 +1670,13 @@
         return haystack.indexOf(query) !== -1;
       }
 
-      function filterLoans(loans, criteria, now) {
+      function filterLoans(loans, criteria) {
         var options = criteria || {};
-        var when = now || DEMO_NOW;
         var query = String(options.query === undefined || options.query === null ? "" : options.query)
           .trim()
           .toLowerCase();
         return loans.filter(function (loan) {
-          if (!matchesView(loan, options.view, when)) return false;
+          if (!matchesView(loan, options.view)) return false;
           if (options.stage && options.stage !== "all" && loan.stage !== options.stage) return false;
           if (options.reviewType && options.reviewType !== "all") {
             var matched = workspace.openReviewItems(loan.state).some(function (item) {
@@ -1761,14 +1760,12 @@
 
       /* ============================================================ the view */
 
-      /* The five nav views of §5.1, left to right. `pipeline` is the whole board. */
-      var NAV_ITEMS = [
-        { view: "pipeline", labelKey: "lender.nav.pipeline" },
-        { view: "needs-review", labelKey: "lender.nav.needs-review", attention: true },
-        { view: "signing-soon", labelKey: "lender.nav.signing-soon" },
-        { view: "disbursed", labelKey: "lender.nav.disbursed" },
-        { view: "closed-archived", labelKey: "lender.nav.closed-archived" }
-      ];
+      /* The nav, left to right, is the board: one filter per kanban column,
+         same order, same label. Clicking a column's name in the nav is the
+         same narrowing as looking at that column. */
+      var NAV_ITEMS = STAGE_COLUMNS.map(function (column) {
+        return { view: column.id, labelKey: column.labelKey };
+      });
 
       var SORT_OPTIONS = [
         { key: "deed-date", labelKey: "lender.toolbar.sort-deed-date" },
@@ -2040,11 +2037,11 @@
         );
       }
 
-      /* Each filter carries its own count, and needs review pairs the lime with a
-         glyph and that count — never colour alone (§9). */
-      function renderNavigation(loans, view, now) {
+      /* Each filter carries its own count — the same count the column it names
+         shows on the board, since the nav and the board share one filter. */
+      function renderNavigation(loans, view) {
         return NAV_ITEMS.map(function (item) {
-          var count = filterLoans(loans, { view: item.view }, now).length;
+          var count = filterLoans(loans, { view: item.view }).length;
           return (
             '<button type="button" data-view="' +
             item.view +
@@ -2292,7 +2289,7 @@
           '><nav class="portfolio-nav" aria-label="' +
           text("lender.nav.aria-label") +
           '">' +
-          renderNavigation(loans, view.view, when) +
+          renderNavigation(loans, view.view) +
           "</nav>" +
           '<main class="portal-main" id="loan-board">' +
           '<div class="page-heading"><div><span class="metric-label">' +
@@ -2432,6 +2429,21 @@
           (note ? "<small>" + escapeHtml(note) + "</small>" : "") +
           "</strong></p>"
         );
+      }
+
+      /* A UF amount, in whichever unit the board's money toggle is on, with the
+         other unit as the note. Both figures were always UF and CLP; only which
+         one leads was fixed. Reading money() at render time means the toggle in
+         the case header — the same one that redraws the rest of the drawer —
+         redraws this card too, instead of the two amounts being frozen the way
+         formatUF/formatCLP printed them straight from the case figures. */
+      function metaRowUF(labelKey, ufValue, decimals) {
+        var primary = money(ufValue, decimals);
+        var secondary =
+          moneyUnit === "clp"
+            ? credit.formatUF(ufValue, decimals)
+            : credit.formatCLP(credit.monthlyCLP(ufValue));
+        return metaRow(labelKey, primary, secondary);
       }
 
       function sectionOpen(headingKey, extra) {
@@ -3437,16 +3449,12 @@
         return (
           sectionOpen("risk.summary-heading") +
           '<div class="record-card">' +
-          metaRow("risk.summary-loan", credit.formatUF(figures.loanUF), credit.formatCLP(figures.loanCLP)) +
-          metaRow("risk.summary-property", credit.formatUF(figures.propertyUF), credit.formatCLP(figures.propertyCLP)) +
-          metaRow("risk.summary-down-payment", credit.formatUF(figures.downPaymentUF), credit.formatCLP(figures.downPaymentCLP)) +
+          metaRowUF("risk.summary-loan", figures.loanUF) +
+          metaRowUF("risk.summary-property", figures.propertyUF) +
+          metaRowUF("risk.summary-down-payment", figures.downPaymentUF) +
           metaRow("risk.summary-term", figures.termYears + " " + t("borrower.sim.years")) +
           metaRow("risk.summary-rate", "UF + " + credit.formatPct(figures.annualRate * 100)) +
-          metaRow(
-            "risk.summary-payment",
-            credit.formatCLP(figures.paymentCLP),
-            credit.formatUF(figures.paymentUF, 2)
-          ) +
+          metaRowUF("risk.summary-payment", figures.paymentUF, 2) +
           metaRow("risk.summary-income", credit.formatCLP(figures.incomeCLP)) +
           "</div></section>" +
 
@@ -5424,7 +5432,20 @@
           return commitDocumentRequest(state, item.documentId, text, options);
         }
         if (decision === "accepted" || decision === "accepted-with-condition") {
-          return commitVerdictOverride(state, item.documentId, decision, condition, options);
+          var settled = commitVerdictOverride(state, item.documentId, decision, condition, options);
+          /* Accepting the document does not answer her — a `borrower-message`
+             is closed only by a reply (§workspace isDocumentWork), so an
+             exception item the verdict already resolved leaves nothing to
+             answer, but a question attached to a document that turns out to be
+             fine still needs the words in this box sent to her, not dropped
+             the moment "accepted" is picked. commitReply is a no-op if the
+             item closed with the verdict, so this never double-answers it. */
+          var words = String(text === null || text === undefined ? "" : text).trim();
+          if (!words) return settled;
+          var answered = commitReply(settled.state, reviewItemId, words, options);
+          return answered.changed
+            ? outcome(state, answered.state, answered.announcement.key, answered.announcement.params)
+            : settled;
         }
         return outcome(state, state, "lender.review.decision-refused");
       }

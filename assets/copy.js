@@ -532,7 +532,7 @@
       "lender.action.sign": "Sign approval",
       "lender.action.reset": "Reset case",
       "lender.action.decline": "Decline the application",
-      "lender.action.override": "Manual override…",
+      "lender.action.override": "Check Notifications",
 
       /* Developer query */
       "lender.email.heading": "Query to the developer",
@@ -989,7 +989,7 @@
       "borrower.result.with-financing": "90% financing · down payment {amount}",
       "borrower.result.without-financing": "Max. 80% financing · down payment {amount}",
       "borrower.result.guarantee-explainer":
-        "The state guarantee is what lets you borrow 90% of the value instead of 80%. It reduces the down payment you need, not the amount you owe.",
+        "The state guarantee is what lets you borrow 90% of the value instead of 80%. It reduces the down payment.",
 
       /* Portal and checklist */
       "borrower.portal.title": "Borrower portal",
@@ -1011,6 +1011,10 @@
       "borrower.drawer.tab-review": "Review",
       "borrower.drawer.tab-document": "Document",
       "borrower.drawer.tab-history": "History",
+      "borrower.drawer.tab-assistant": "Loan assistant",
+      "borrower.drawer.assistant-lead": "Messages about this document with your loan officer.",
+      "borrower.drawer.assistant-placeholder": "Ask about this document…",
+      "borrower.drawer.assistant-empty": "No messages yet on this document.",
       "borrower.drawer.stated": "Stated in your application",
       "borrower.drawer.found": "Found in the document",
       "borrower.drawer.scan-stamp": "Scanned document · page 1",
@@ -2182,6 +2186,10 @@
       "borrower.drawer.tab-review": "Revisión",
       "borrower.drawer.tab-document": "Documento",
       "borrower.drawer.tab-history": "Historial",
+      "borrower.drawer.tab-assistant": "Asistente del crédito",
+      "borrower.drawer.assistant-lead": "Mensajes sobre este documento con tu ejecutivo.",
+      "borrower.drawer.assistant-placeholder": "Preguntar sobre este documento…",
+      "borrower.drawer.assistant-empty": "Aún no hay mensajes sobre este documento.",
       "borrower.drawer.stated": "Declarado en tu solicitud",
       "borrower.drawer.found": "Encontrado en el documento",
       "borrower.drawer.scan-stamp": "Documento escaneado · página 1",
