@@ -2000,3 +2000,43 @@ test("a verdict is never bridged for a fixture or the second live case", () => {
   assert.equal(decided.changed, true);
   assert.equal(decided.bridged, undefined, "no storage was offered, so nothing should be sent");
 });
+
+/* ==================================================== the tab that carries it */
+
+test("the Conversation tab carries a bubble for messages still awaiting a reply", () => {
+  const state = workspace.sendBorrowerMessage(
+    openingState(),
+    "title-certificate",
+    "Any update on the certificate?",
+    "2026-08-06T12:00:00.000Z"
+  );
+  const loan = loanFor(state);
+  const markup = lender.renderWorkspace(loan, {
+    selectedCaseId: loan.caseId,
+    activeTab: "overview"
+  });
+  assert.match(
+    markup,
+    /id="tab-conversation"[^>]*>Conversation<span class="tab-badge" aria-hidden="true">1<\/span>/
+  );
+  assert.ok(
+    markup.includes(
+      '<span class="sr-only">, ' +
+        shown("lender.conversation.pending-link", { count: 1 }) +
+        "</span></button>"
+    )
+  );
+  /* No other tab carries one — the bubble is the Conversation tab's alone. */
+  for (const name of lender.WORKSPACE_TABS.filter(entry => entry !== "conversation")) {
+    assert.ok(!new RegExp('id="tab-' + name + '"[^>]*>[^<]*<span class="tab-badge"').test(markup));
+  }
+});
+
+test("the Conversation tab carries no bubble once nothing is waiting on a reply", () => {
+  const loan = loanFor(openingState());
+  const markup = lender.renderWorkspace(loan, {
+    selectedCaseId: loan.caseId,
+    activeTab: "overview"
+  });
+  assert.ok(!markup.includes('class="tab-badge"'));
+});

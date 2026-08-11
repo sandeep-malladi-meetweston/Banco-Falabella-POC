@@ -84,7 +84,11 @@
     .workspace-drive-link{display:inline-flex;align-items:center;justify-content:center;color:var(--slate);text-decoration:none}
     .workspace-drive-link:hover{background:var(--shell);border-color:#aebac4;color:var(--ink)}
     .workspace-drive-link svg{width:15px;height:15px}
-    .workspace-tabs{display:flex;padding:0 24px;border-bottom:1px solid var(--rule)}.workspace-tabs button{padding:13px 11px;border:0;border-bottom:3px solid transparent;background:#fff;color:var(--slate);font-weight:600}.workspace-tabs button[aria-selected="true"]{border-bottom-color:var(--brand);color:var(--ink)}/* The last inch of the panel is under the launcher, so the scroll ends above
+    .workspace-tabs{display:flex;padding:0 24px;border-bottom:1px solid var(--rule)}.workspace-tabs button{display:inline-flex;align-items:center;padding:13px 11px;border:0;border-bottom:3px solid transparent;background:#fff;color:var(--slate);font-weight:600}.workspace-tabs button[aria-selected="true"]{border-bottom-color:var(--brand);color:var(--ink)}
+    /* A message waiting on a reply, said on the tab that answers it — the same
+       small round count a chat app puts on an unread thread, not the amber
+       "needs a decision" alert this tab deliberately carries none of. */
+    .tab-badge{display:inline-grid;place-items:center;min-width:16px;height:16px;margin-left:6px;padding:0 4px;border-radius:999px;background:var(--brand);color:#fff;font:700 10px var(--mono);line-height:1}/* The last inch of the panel is under the launcher, so the scroll ends above
        it rather than behind it. */
     .workspace-panel{flex:1;overflow:auto;padding:22px 24px 88px}.workspace-body{flex:1;display:flex;min-height:0}.workspace-section{margin-bottom:24px}.workspace-section h3,.record-card h3{margin:0 0 10px;font:600 15px var(--display)}.section-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}.review-queue{margin:2px 0 10px;color:var(--slate);font-size:11.5px}.no-action{margin:10px 0;padding:14px;border:1px solid var(--rule);border-radius:9px;background:var(--shell)}.no-action p{margin:6px 0 0;color:var(--slate)}.review-queue-list{border:1px solid var(--brand-rule);border-radius:9px;overflow:hidden;background:var(--brand-wash)}.review-item{margin:0;padding:12px 14px}.review-item+.review-item{border-top:1px solid var(--brand-rule)}.review-item-heading{display:flex;flex-wrap:wrap;align-items:baseline;gap:3px 9px;color:var(--brand-deep)}.review-item-heading strong{font:600 13.5px var(--display)}.review-item-where{color:var(--slate);font-size:11.5px;overflow-wrap:anywhere}.review-item-detail{margin:4px 0 0;color:var(--slate);font-size:12.5px;line-height:1.5;overflow-wrap:anywhere}.review-item .review-queue-link{display:block;margin:8px 0 0}.review-item textarea{flex:1;min-width:0;height:34px;min-height:34px;margin:0;padding:7px 9px;border:1px solid #cbd4dc;border-radius:6px;resize:none}.review-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:8px}.review-item .review-actions{align-items:center;justify-content:flex-start;margin-top:9px}/* ---- the decision on an open item ----
        A select and a short button on one line, where two full-width buttons
@@ -5407,6 +5411,7 @@
         var full = knownMode(view.panelMode) === "full";
         var assistantOpen = Boolean(view.assistantOpen);
         var open = workspace.openReviewItems(loan.state);
+        var conversationPendingCount = Object.keys(pendingMessageIds(loan.state)).length;
         var body =
           tab === "application"
             ? renderApplicationTab(loan)
@@ -5473,6 +5478,20 @@
           text("lender.tabs.aria-label") +
           '">' +
           WORKSPACE_TABS.map(function (name) {
+            /* Said twice, once for the eye and once for the ear: the bubble is
+               `aria-hidden` because a screen reader announcing "two" right
+               after "Conversation, tab" reads as a count of tabs, not of
+               messages — the sr-only phrase after it says what the two
+               actually are (§9, never colour or a lone digit alone). */
+            var badge =
+              name === "conversation" && conversationPendingCount
+                ? '<span class="tab-badge" aria-hidden="true">' +
+                  conversationPendingCount +
+                  "</span>" +
+                  '<span class="sr-only">, ' +
+                  text("lender.conversation.pending-link", { count: conversationPendingCount }) +
+                  "</span>"
+                : "";
             return (
               '<button id="tab-' +
               name +
@@ -5484,6 +5503,7 @@
               (tab === name ? "0" : "-1") +
               '" aria-controls="workspace-panel">' +
               text("lender.tab." + name) +
+              badge +
               "</button>"
             );
           }).join("") +
