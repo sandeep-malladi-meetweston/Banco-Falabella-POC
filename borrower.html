@@ -1470,6 +1470,15 @@
 
       var CASE_STORAGE_KEY = "bfDemoCase:" + CASE_ID;
       var MESSAGE_BRIDGE_KEY = "bfDemoMessages:" + CASE_ID;
+      /* localStorage, the same shared area as the message bridge — a restart
+         has to reach a lender tab that is already open on its own case data,
+         which sessionStorage cannot do (§ her place on the page: it is per
+         tab on purpose). The value is the bridge's own run counter, already
+         a number that only ever goes up and needs no clock of its own; a
+         lender tab treats "the number I last saw is not the number here" as
+         its own signal to reload the case fresh rather than trusting
+         whatever it already has open. */
+      var CASE_RESET_KEY = "bfDemoReset:" + CASE_ID;
       var BRIDGE_VERSION = 1;
       var BRIDGE_LIMIT = 200;
       /* The assistant is a third voice on the bridge: it answers her on her own
@@ -1862,24 +1871,57 @@
        * A reply written from the lender surface, arriving in her thread. She sees the
        * mortgage team and nothing of the bank's internals (§7). The text is data,
        * stored verbatim and escaped once by the renderer.
+       *
+       * Stamped on arrival, not with the clock it was written by — the mirror
+       * of the same fix on the lender's own `bridgeAbsorb` (§7): the desk's
+       * narrative runs a day after hers, so keeping its timestamp would file a
+       * reply that just landed as though it arrived a day after the message
+       * it answers, jumping her own thread forward a full day mid-conversation.
+       * `beatTimestamp` is already how every one of her own beats — sent or
+       * scripted — gets its instant; an arrival is simply the next one. Each
+       * entry in the batch a second later than the one before it, so a batch
+       * keeps its order without every message claiming the same minute.
        */
       function bridgeAbsorb(viewState, options) {
         var fresh = bridgeIncoming(options);
         if (!fresh.length) {
           return { changed: false, viewState: viewState, absorbed: [], announcement: null };
         }
-        /* Filed on the document it actually answers, the same way the desk
-           files her messages — so a reply written from a document's own
-           review page arrives back on that document, not just in the
-           WhatsApp thread everyone sees regardless of which document they
-           asked about. */
         var state = viewState.state;
-        fresh.forEach(function (entry) {
+        var received = Date.parse(beatTimestamp(SCRIPT.length + viewState.thread.length + 1));
+        fresh.forEach(function (entry, index) {
+          /* Filed on the document it actually answers, the same way the desk
+             files her messages — so a reply written from a document's own
+             review page arrives back on that document, not just in the
+             WhatsApp thread everyone sees regardless of which document they
+             asked about. */
           var documentId =
             workspace.DOCUMENT_IDS.indexOf(entry.documentId) === -1
               ? workspace.DOCUMENT_IDS[0]
               : entry.documentId;
-          state = workspace.sendLenderMessage(state, documentId, entry.text, entry.timestamp);
+          var stamp = new Date(received + index * 1000).toISOString();
+          state = workspace.sendLenderMessage(state, documentId, entry.text, stamp);
+          /* A decision made on the desk is not actually closed until her own
+             checklist agrees — otherwise a document the lender just accepted
+             keeps reading whatever her last upload left it at. Applied only to
+             the document the entry actually names, never the "somewhere" the
+             message above falls back to: a verdict is not a note that merely
+             wants a home, and guessing one for it would land someone's
+             decision on the wrong document. */
+          if (
+            typeof entry.verdict === "string" &&
+            workspace.VERDICTS.indexOf(entry.verdict) !== -1 &&
+            workspace.DOCUMENT_IDS.indexOf(entry.documentId) !== -1
+          ) {
+            state = workspace.setVerdict(
+              state,
+              entry.documentId,
+              entry.verdict,
+              { condition: entry.condition || "" },
+              stamp
+            );
+            state = workspace.settleConditionsFor(state, entry.documentId, stamp);
+          }
         });
         var arriving = fresh.map(function (entry) {
           return { author: "assistant", text: entry.text };
@@ -1909,7 +1951,10 @@
        * emptied and its run moved on, so nothing a previous run wrote can reappear
        * on the lender board. The case is re-seeded with the opening state rather
        * than left behind, so a lender tab reading storage next sees a case that has
-       * not started rather than the finished one.
+       * not started rather than the finished one — including one that is already
+       * open: the fresh run number is written to CASE_RESET_KEY too, which is
+       * what tells an open lender tab to drop its own copy of the conversation
+       * rather than wait for a message that will now never arrive.
        */
       function restart(options) {
         var settings = options || {};
@@ -1921,6 +1966,7 @@
               : settings.storage
             : settings.caseStorage;
         bridgeClear(bridge);
+        writeRaw(bridge, CASE_RESET_KEY, String(bridgeRun));
         var opening = initialViewState();
         /* A storage that refuses is not a reason to refuse the restart: the demo
            carries on in memory and the page says so once. */
@@ -4542,6 +4588,7 @@
         VIEW_STORAGE_KEY: VIEW_STORAGE_KEY,
         BORROWER_VIEW_VERSION: BORROWER_VIEW_VERSION,
         MESSAGE_BRIDGE_KEY: MESSAGE_BRIDGE_KEY,
+        CASE_RESET_KEY: CASE_RESET_KEY,
         BRIDGE_LIMIT: BRIDGE_LIMIT,
         BRIDGE_ROLE: BRIDGE_ROLE,
         PHASES: PHASES,

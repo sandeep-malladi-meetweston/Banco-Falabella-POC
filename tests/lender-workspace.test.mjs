@@ -1161,6 +1161,36 @@ test("resetCase returns the case to its opening state", () => {
   assert.equal(result.announcement.key, "lender.status.reset");
 });
 
+test("resetPrimaryCaseState is the opening case with every document's own conversation cleared", () => {
+  const opening = lender.fallbackCaseState();
+  const openingHasSeededMessages = Object.keys(plain(opening).documents).some(
+    documentId => plain(opening).documents[documentId].messages.length > 0
+  );
+  assert.ok(openingHasSeededMessages, "the fixture is supposed to seed a handoff exchange");
+
+  const reset = lender.resetPrimaryCaseState();
+  const documents = plain(reset).documents;
+  for (const documentId of Object.keys(documents)) {
+    assert.deepEqual(documents[documentId].messages, [], documentId);
+  }
+  /* Nothing else about the opening case changed — same documents, same
+     verdicts, same open review queue — only the conversation is gone. */
+  const openingWithoutMessages = plain(opening);
+  for (const documentId of Object.keys(openingWithoutMessages.documents)) {
+    openingWithoutMessages.documents[documentId].messages = [];
+  }
+  assert.deepEqual(plain(reset), openingWithoutMessages);
+});
+
+test("parseResetMarker only ever reads a real, non-negative whole number", () => {
+  for (const good of ["0", "1", "42", "007"]) {
+    assert.equal(lender.parseResetMarker(good), Number(good), good);
+  }
+  for (const bad of [null, undefined, "", "   ", "-1", "1.5", "abc", "NaN", {}, []]) {
+    assert.equal(lender.parseResetMarker(bad), null, JSON.stringify(bad));
+  }
+});
+
 /* ============================================================== the seam */
 
 test("the later seam is injectable and replaceable, and nothing else waits on time", () => {
@@ -1742,9 +1772,14 @@ test("a sample loan is not offered a way to write to her", () => {
   assert.ok(markup.includes(shown("common.readonly-loan")));
 });
 
-test("the officer can write to her without going through a queue item", () => {
+test("the officer can write to her without going through a queue item, and it settles her open messages", () => {
   const state = conversationState();
-  const before = plain(workspace.openReviewItems(state)).length;
+  const before = plain(workspace.openReviewItems(state));
+  /* Two of the four open items are her own messages (§ the Deal Assistant is
+     notifications only) — a document-exception on each of the same two
+     documents makes up the other two. */
+  assert.equal(before.length, 4);
+  assert.equal(before.filter(item => item.type === "borrower-message").length, 2);
   const sent = lender.commitConversationMessage(state, "I will confirm today, Javiera.", {
     timestamp: AT.remind
   });
@@ -1754,8 +1789,15 @@ test("the officer can write to her without going through a queue item", () => {
   const last = thread[thread.length - 1];
   assert.equal(last.author, "lender");
   assert.equal(last.text, "I will confirm today, Javiera.");
-  /* Writing to her is not work for anyone, and it resolves nobody's question. */
-  assert.equal(plain(workspace.openReviewItems(sent.state)).length, before);
+  /* Writing to her from the Conversation tab is exactly how her open
+     messages get answered now, so it settles them — every one of them,
+     since the tab is one thread rather than one per document. The two
+     document-exceptions are untouched: those need an actual verdict, not
+     an acknowledgement. */
+  const after = plain(workspace.openReviewItems(sent.state));
+  assert.equal(after.length, 2);
+  assert.equal(after.filter(item => item.type === "borrower-message").length, 0);
+  assert.equal(after.filter(item => item.type === "document-exception").length, 2);
   assert.equal(t(sent.announcement.key), t("lender.conversation.sent"));
 });
 
@@ -1839,4 +1881,122 @@ test("her line over the bridge is still work, and is still announced", () => {
     item => item.type === "borrower-message"
   );
   assert.equal(items.length, 1);
+});
+
+/* ============================================= how much genuinely needs the desk */
+
+/* A message answered from the Conversation tab was still counted as an "open
+   item" here, so a heading could read "4 open" over a queue that only ever
+   listed two decisions — the other two were her words, waiting on a reply the
+   tab already handles. These lock in that a pending message raises its own
+   count there and nowhere else. */
+test("a pending message is not counted among the open items needing a decision", () => {
+  let state = workspace.sendBorrowerMessage(
+    openingState(),
+    "title-certificate",
+    "Any update on the certificate?",
+    "2026-08-06T12:00:00.000Z"
+  );
+  state = workspace.sendBorrowerMessage(
+    state,
+    "tax-folder",
+    "Did the resend arrive?",
+    "2026-08-06T12:01:00.000Z"
+  );
+  assert.equal(
+    plain(workspace.openReviewItems(state)).length,
+    4,
+    "the fixture should still carry all four open items underneath"
+  );
+
+  const loan = loanFor(state);
+  const markup = lender.renderWorkspace(loan, {
+    selectedCaseId: loan.caseId,
+    activeTab: "overview"
+  });
+  assert.ok(markup.includes(shown("lender.overview.open-count", { count: 2 })));
+  assert.ok(!markup.includes(shown("lender.overview.open-count", { count: 4 })));
+  assert.ok(
+    markup.includes(shown("lender.conversation.pending-link", { count: 2 })),
+    "the two messages should still be counted, just on their own link"
+  );
+
+  /* The portfolio's own Notifications tile is a sum across every case, so
+     what it should hold still is the two messages' own contribution to
+     it — not its absolute total, which the other eleven fixtures already
+     carry a share of. */
+  const before = lender.portfolioMetrics(lender.buildPortfolio(), NOW);
+  const after = lender.portfolioMetrics(
+    lender.buildPortfolio(lender.FALLBACK_CASE, state),
+    NOW
+  );
+  assert.equal(
+    after.notificationCount,
+    before.notificationCount,
+    "the two new messages should not have raised the board's own Notifications tile"
+  );
+});
+
+/* =================================== what the desk decides, and what she is told */
+
+/* Storage-shaped, like the other bridge tests' own double: the bridge speaks
+   getItem/setItem, not Map. */
+function memoryStorage() {
+  const data = new Map();
+  return {
+    getItem: key => (data.has(key) ? data.get(key) : null),
+    setItem: (key, value) => data.set(key, String(value)),
+    removeItem: key => data.delete(key)
+  };
+}
+
+test("accepting a document on the live case updates her own checklist over the bridge", () => {
+  const storage = memoryStorage();
+  const decided = lender.commitReviewDecision(openingState(), "review-2", "accepted", "", "", {
+    timestamp: AT.reply,
+    storage
+  });
+  assert.equal(decided.changed, true);
+  assert.equal(verdictOf(decided.state, "tax-folder"), "accepted");
+  assert.equal(decided.bridged, true);
+
+  const envelope = JSON.parse(storage.getItem(lender.MESSAGE_BRIDGE_KEY));
+  const notice = envelope.entries[envelope.entries.length - 1];
+  assert.equal(notice.from, "lender");
+  assert.equal(notice.documentId, "tax-folder");
+  assert.equal(notice.verdict, "accepted");
+  assert.equal(
+    notice.text,
+    t("lender.conversation.verdict-notice", {
+      document: t("doc.tax-folder.name"),
+      verdict: t("verdict.accepted")
+    })
+  );
+});
+
+test("accepting with a condition carries the condition text onto the bridge", () => {
+  const storage = memoryStorage();
+  const decided = lender.commitReviewDecision(
+    openingState(),
+    "review-1",
+    "accepted-with-condition",
+    "",
+    "Confirm the mortgage releases at signing.",
+    { timestamp: AT.reply, storage }
+  );
+  assert.equal(verdictOf(decided.state, "title-certificate"), "accepted-with-condition");
+  const envelope = JSON.parse(storage.getItem(lender.MESSAGE_BRIDGE_KEY));
+  const notice = envelope.entries[envelope.entries.length - 1];
+  assert.equal(notice.verdict, "accepted-with-condition");
+  assert.equal(notice.condition, "Confirm the mortgage releases at signing.");
+  assert.ok(notice.text.includes("Confirm the mortgage releases at signing."));
+});
+
+test("a verdict is never bridged for a fixture or the second live case", () => {
+  const decided = lender.commitReviewDecision(openingState(), "review-2", "accepted", "", "", {
+    timestamp: AT.reply,
+    storage: undefined
+  });
+  assert.equal(decided.changed, true);
+  assert.equal(decided.bridged, undefined, "no storage was offered, so nothing should be sent");
 });

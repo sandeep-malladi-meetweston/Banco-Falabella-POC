@@ -1290,6 +1290,47 @@
         return Number.isInteger(value) && value >= 0 ? value : null;
       }
 
+      /* A restart on the borrower page reaches this tab even if it is already
+         open on its own copy of the case (§ her place on the page,
+         borrower.html): the run number it broadcasts there is compared
+         against the last one this tab acted on, and a higher one means the
+         conversation it names is gone and this desk's copy of the primary
+         case should be too — the same reset a "Reset case" click already
+         gives it, just triggered from the other surface. */
+      function pendingCaseReset(bridge, session) {
+        var marker = parseResetMarker(readRaw(bridge, CASE_RESET_KEY).value);
+        if (marker === null) return false;
+        var seen = parseResetMarker(readRaw(session, RESET_APPLIED_KEY).value);
+        return seen === null || marker > seen;
+      }
+
+      /* The opening state, with every document's own conversation cleared —
+         not just whatever a live session had added to it. A restart is what
+         her testing reaches for between runs specifically to leave nothing
+         behind, and the fixture's own seeded handoff exchange is exactly the
+         kind of leftover "wait, is that still here?" a restart exists to
+         rule out. `resetCase` (the desk's own manual "Reset case") is left
+         alone — a presenter clicking that wants the narrative's opening
+         conversation back, not an empty one. */
+      function resetPrimaryCaseState() {
+        var opening = FALLBACK_CASE.openingState();
+        workspace.DOCUMENT_IDS.forEach(function (documentId) {
+          var record = opening.documents[documentId];
+          if (record) record.messages = [];
+        });
+        return opening;
+      }
+
+      /* Applies it, and remembers having done so — `null` when there was
+         nothing to apply, so a caller never has to call `pendingCaseReset`
+         twice to find that out. */
+      function applyCaseReset(bridge, session) {
+        var marker = parseResetMarker(readRaw(bridge, CASE_RESET_KEY).value);
+        if (marker === null) return null;
+        writeRaw(session, RESET_APPLIED_KEY, String(marker));
+        return outcome(null, resetPrimaryCaseState(), "lender.status.reset");
+      }
+
       /* -------------------------------------------------------- the case state */
 
       function caseStorageKey(caseData) {
@@ -1456,7 +1497,13 @@
           from: input.from,
           text: body,
           timestamp: typeof input.timestamp === "string" ? input.timestamp : "",
-          documentId: typeof input.documentId === "string" ? input.documentId : null
+          documentId: typeof input.documentId === "string" ? input.documentId : null,
+          /* Carried alongside the words, not instead of them: a verdict with no
+             text to explain it is refused above like any other blank message,
+             so a status change is always something she can read as well as
+             the other side's own record acting on. */
+          verdict: typeof input.verdict === "string" ? input.verdict : null,
+          condition: typeof input.condition === "string" ? input.condition : null
         };
         envelope.entries.push(entry);
         var ok = bridgeWrite(storage, envelope);
@@ -1686,8 +1733,24 @@
 
       /* =============================================================== metrics */
 
+      /* A message is not a decision waiting on the desk — it is answered from
+         the Conversation tab, not settled with a verdict — so counting it
+         alongside a document exception is what let a badge or a card say "4"
+         when only two of those four were ever hers to decide. Every count of
+         "how much needs the desk" reads through this, never straight off
+         `openReviewItems`, so a pending message can raise it in the
+         Conversation tab's own count (§pendingMessageIds) without also
+         raising it here. Filtering by review reason (§filterLoans) is the one
+         place a message is deliberately still a reason to find a case by, so
+         it reads `openReviewItems` directly instead. */
+      function actionableReviewItems(state) {
+        return workspace.openReviewItems(state).filter(function (item) {
+          return item.type !== "borrower-message";
+        });
+      }
+
       function openCount(loan) {
-        return workspace.openReviewItems(loan.state).length;
+        return actionableReviewItems(loan.state).length;
       }
 
       function sumRequestedUF(loans) {
@@ -2232,7 +2295,7 @@
          reason chip that says so in words, and in Underwriting the corner flag
          for a title or an inspection still out. */
       function renderLoanCard(loan) {
-        var open = workspace.openReviewItems(loan.state);
+        var open = actionableReviewItems(loan.state);
         /* The count first, then what the newest one is about: a card that says
            "2 notifications · New upload" tells the officer both how much is
            waiting and what she is walking into, which "Needs review · New
@@ -4259,11 +4322,11 @@
 
       /* The same order for the queue: an item on a document that was sent back
          comes before one on a document still under review. An item with no
-         document of its own — the deed deadline, her message about the case —
-         sorts on its own age, after the document work. */
+         document of its own — the deed deadline — sorts on its own age, after
+         the document work. Her messages are not in this list at all
+         (§actionableReviewItems): they are answered, not decided. */
       function openItemsByAttention(loan) {
-        return workspace
-          .openReviewItems(loan.state)
+        return actionableReviewItems(loan.state)
           .map(function (item, index) {
             var record = item.documentId ? loan.state.documents[item.documentId] : null;
             return {
@@ -4573,7 +4636,7 @@
          brief says what is in the way; this says which end to pick it up by. */
       function dealAssistantNextSteps(loan) {
         var steps = [];
-        var open = workspace.openReviewItems(loan.state);
+        var open = actionableReviewItems(loan.state);
         var record = decisionRecord(loan.state, loan);
         var outstanding = workspace.DOCUMENT_IDS.filter(function (documentId) {
           return verdictOf(loan, documentId) === "not-uploaded";
@@ -4661,7 +4724,7 @@
           var verdict = verdictOf(loan, documentId);
           return verdict !== "accepted" && verdict !== "accepted-with-condition";
         });
-        var open = workspace.openReviewItems(loan.state);
+        var open = actionableReviewItems(loan.state);
         var conditions = openConditionsOf(loan);
         var messages = 0;
         workspace.DOCUMENT_IDS.forEach(function (documentId) {
@@ -4742,7 +4805,7 @@
 
       /* What is in the way, right now, with the controls that would move it. */
       function dealAssistantBrief(loan) {
-        var open = workspace.openReviewItems(loan.state);
+        var open = actionableReviewItems(loan.state);
         var conditions = openConditionsOf(loan);
         var record = decisionRecord(loan.state, loan);
         var actions = [];
@@ -5577,6 +5640,27 @@
         return next;
       }
 
+      /* The mirror image of `resolveItemsForDocument`, for the notification's
+         other half: a message or a deadline, never a verdict, so answering it
+         is exactly what the Conversation tab's own send button is for. Case-wide
+         rather than one document — the tab is one thread, not one per
+         document, and an unprompted send already picks whichever document
+         still has open work over any other by the same logic (see
+         `conversationDocumentId`); scoping the resolve to one document only
+         would leave the others it did not happen to land on stuck open. Sending
+         settles every one of them: a notification a message already answered
+         has nothing left to hold it open, and the Deal Assistant queue would
+         otherwise keep asking for a reply that has already gone out (§ the
+         Deal Assistant is notifications only). */
+      function resolveConversationOnlyItems(state, timestamp) {
+        var next = state;
+        workspace.openReviewItems(state).forEach(function (item) {
+          if (CONVERSATION_ONLY_TYPES.indexOf(item.type) === -1) return;
+          next = workspace.resolveReviewItem(next, item.id, timestamp);
+        });
+        return next;
+      }
+
       /* The seam and the callback, in one place: schedule `apply` and hand its
          outcome to whoever asked. `readState` lets the page feed the callback the
          state as it is when the event lands, so two arrivals in flight at once
@@ -5634,6 +5718,7 @@
         var documentId = (options && options.documentId) || conversationDocumentId(state);
         var next = workspace.sendLenderMessage(state, documentId, body, stamp);
         if (next === state) return outcome(state, state, "lender.conversation.blank");
+        next = resolveConversationOnlyItems(next, stamp);
         var sent = outcome(state, next, "lender.conversation.sent");
         if (options && options.storage !== undefined) {
           sent.bridged = bridgeSend(options.storage, {
@@ -5763,10 +5848,31 @@
            developer's reply would, so the gate, the brief and the analysis card
            all read the case she has just made rather than the one she found. */
         next = workspace.settleConditionsFor(next, documentId, stamp);
-        return outcome(state, next, "lender.status.override-applied", {
+        var applied = outcome(state, next, "lender.status.override-applied", {
           document: t("doc." + documentId + ".name"),
           verdict: t("verdict." + verdict)
         });
+        /* Closing something on this side is not closed for her until her own
+           portal says so too: without this her checklist kept showing whatever
+           it showed before the desk ever decided, on a document the desk had
+           already settled. The same words either way — what the notice reads
+           in the audit trail is what her thread reads over the bridge. */
+        if (options && options.storage !== undefined) {
+          var notice = t("lender.conversation.verdict-notice", {
+            document: t("doc." + documentId + ".name"),
+            verdict: t("verdict." + verdict)
+          });
+          if (verdict === "accepted-with-condition" && wording) notice += " " + wording;
+          applied.bridged = bridgeSend(options.storage, {
+            from: BRIDGE_ROLE,
+            text: notice,
+            timestamp: stamp,
+            documentId: documentId,
+            verdict: verdict,
+            condition: wording || null
+          }).ok;
+        }
+        return applied;
       }
 
       /**
@@ -6035,29 +6141,8 @@
           if (data.caseId === CASE_ID) primaryOpened = opened;
         });
 
-        /* A restart on the borrower page reaches this tab even if it is
-           already open on its own copy of the case (§ her place on the page,
-           borrower.html): the run number it broadcasts there is compared
-           against the last one this tab acted on, and a higher one means the
-           conversation it names is gone and this desk's copy of the primary
-           case should be too — the same reset a "Reset case" click already
-           gives it, just triggered from the other surface. */
-        function pendingCaseReset() {
-          var marker = parseResetMarker(readRaw(bridgeStorage(), CASE_RESET_KEY).value);
-          if (marker === null) return false;
-          var seen = parseResetMarker(readRaw(caseStorage(), RESET_APPLIED_KEY).value);
-          return seen === null || marker > seen;
-        }
-
-        function applyCaseReset() {
-          var marker = parseResetMarker(readRaw(bridgeStorage(), CASE_RESET_KEY).value);
-          if (marker === null) return null;
-          writeRaw(caseStorage(), RESET_APPLIED_KEY, String(marker));
-          return resetCase({ caseData: liveCaseData(CASE_ID) });
-        }
-
-        if (pendingCaseReset()) {
-          var initialReset = applyCaseReset();
+        if (pendingCaseReset(bridgeStorage(), caseStorage())) {
+          var initialReset = applyCaseReset(bridgeStorage(), caseStorage());
           if (initialReset && initialReset.changed) liveStates[CASE_ID] = initialReset.state;
         }
 
@@ -6553,7 +6638,10 @@
                   documentId,
                   picked ? picked.value : "",
                   wording ? wording.value : "",
-                  { timestamp: nextInstant() }
+                  {
+                    timestamp: nextInstant(),
+                    storage: loan.caseId === CASE_ID ? bridgeStorage() : undefined
+                  }
                 )
               );
             });
@@ -6942,7 +7030,9 @@
         function onStorage(event) {
           if (!event) return;
           if (event.key === CASE_RESET_KEY) {
-            if (pendingCaseReset()) apply(CASE_ID, applyCaseReset());
+            if (pendingCaseReset(bridgeStorage(), caseStorage())) {
+              apply(CASE_ID, applyCaseReset(bridgeStorage(), caseStorage()));
+            }
             return;
           }
           if (event.key !== MESSAGE_BRIDGE_KEY) return;
@@ -7124,6 +7214,9 @@
         signApproval: signApproval,
         resetCase: resetCase,
         parseResetMarker: parseResetMarker,
+        pendingCaseReset: pendingCaseReset,
+        applyCaseReset: applyCaseReset,
+        resetPrimaryCaseState: resetPrimaryCaseState,
 
         /* The delayed-arrival seam, shared in shape with Task 7's borrower page. */
         later: later,

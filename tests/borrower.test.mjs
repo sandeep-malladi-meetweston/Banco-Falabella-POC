@@ -770,6 +770,24 @@ test("restart returns to the opening state and clears the message bridge", () =>
      it — the next load has nothing to resume into but the opening state. */
   assert.equal(store.getItem(borrower.VIEW_STORAGE_KEY), null);
   assert.equal(store.getItem("unrelated"), "keep me", "and nothing else was touched");
+  /* And a lender tab already open on this case — which cannot see this
+     tab's sessionStorage at all — hears about the restart over the one
+     thing they do share. */
+  assert.match(store.getItem(borrower.CASE_RESET_KEY), /^\d+$/);
+});
+
+test("each restart's broadcast is a higher number than the one before it", () => {
+  const storage = new Map();
+  const store = {
+    getItem: key => (storage.has(key) ? storage.get(key) : null),
+    setItem: (key, value) => storage.set(key, String(value)),
+    removeItem: key => storage.delete(key)
+  };
+  borrower.restart({ storage: store });
+  const first = Number(store.getItem(borrower.CASE_RESET_KEY));
+  borrower.restart({ storage: store });
+  const second = Number(store.getItem(borrower.CASE_RESET_KEY));
+  assert.ok(second > first, `expected ${second} > ${first}`);
 });
 
 test("restart survives a storage that throws", () => {

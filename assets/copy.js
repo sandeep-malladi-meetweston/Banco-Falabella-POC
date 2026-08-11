@@ -419,6 +419,10 @@
       "lender.conversation.sent": "Message sent to Javiera.",
       "lender.conversation.blank": "Type a message before sending.",
       "lender.conversation.readonly": "This case is a read-only sample and cannot be messaged.",
+      /* Bridged whenever a decision on the live case changes a document's
+         verdict, so her checklist and her thread agree with the desk's own
+         record instead of freezing at whatever the last upload said. */
+      "lender.conversation.verdict-notice": "{document} — {verdict}.",
       /* The conversation tab: her WhatsApp thread, read from the desk, in the
          one order she read it in. */
       "lender.conversation.heading": "Message thread",
@@ -1665,6 +1669,7 @@
       "lender.conversation.blank": "Escribe un mensaje antes de enviarlo.",
       "lender.conversation.readonly":
         "Este caso es una muestra de solo lectura y no admite mensajes.",
+      "lender.conversation.verdict-notice": "{document} — {verdict}.",
       "lender.conversation.heading": "Hilo de mensajes",
       "lender.conversation.subtitle": "El mismo hilo que ella ve en su teléfono",
       "lender.conversation.aria-label": "Conversación con {borrower}",

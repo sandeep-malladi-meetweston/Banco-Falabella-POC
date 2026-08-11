@@ -738,6 +738,45 @@ test("a lender reply round-trips back into the WhatsApp thread", () => {
   assert.ok(markup.includes(t("borrower.chat.team-name")));
 });
 
+test("a lender reply is stamped on her own clock on arrival, not the desk's", () => {
+  /* Same asymmetry the lender's own bridgeAbsorb already fixed, the other
+     way round (§7): her narrative starts a day before the desk's DEMO_NOW,
+     so a reply kept at the timestamp it was written with would read as
+     though it arrived a day after the message it answers — the exact "not
+     in sync" a real back-and-forth conversation must not show. */
+  freshBridges();
+  const storage = memoryStorage();
+
+  const played = borrower.runScript();
+  const sentByHer = borrower.sendBorrowerMessage(played, "Any news on the title?", {
+    storage: storage
+  });
+  const herOwnStamp = plain(sentByHer.viewState).state.documents["title-certificate"].messages.slice(-1)[0]
+    .timestamp;
+
+  const absorbed = lender.bridgeAbsorb(lender.FALLBACK_CASE.state, { storage: storage });
+  const item = openOf(lender, absorbed.state, "borrower-message")[0];
+  const replied = lender.commitReply(absorbed.state, item.id, "We are on it.", {
+    /* The desk's clock: a full day ahead of her narrative's own start. */
+    timestamp: stamp(20),
+    storage: storage
+  });
+  assert.equal(replied.changed, true);
+
+  const received = borrower.bridgeAbsorb(sentByHer.viewState, { storage: storage });
+  const messages = plain(received.viewState).state.documents["title-certificate"].messages;
+  const reply = messages[messages.length - 1];
+  assert.equal(reply.text, "We are on it.");
+  /* Not the desk's literal stamp — that is the bug — and strictly after her
+     own last message on her own clock, the way a reply that "just arrived"
+     always reads. */
+  assert.notEqual(reply.timestamp, stamp(20));
+  assert.ok(
+    Date.parse(reply.timestamp) > Date.parse(herOwnStamp),
+    `expected the reply (${reply.timestamp}) after her own message (${herOwnStamp})`
+  );
+});
+
 test("a lender reply round-trips onto the document's own review page, not just the WhatsApp thread", () => {
   freshBridges();
   const storage = memoryStorage();
@@ -1023,6 +1062,100 @@ test("restart survives a storage that throws", () => {
   const restarted = borrower.restart({ storage: storage });
   assert.deepEqual(plain(restarted.state), plain(borrower.initialViewState().state));
   assert.deepEqual(plain(borrower.viewOnlyAnnouncement()), { key: "common.view-only", params: null });
+});
+
+/* ================================== restart reaches a lender tab already open */
+
+/* "restart clears the case state as well as the bridge" (above) covers the
+   case `untouched` already handled: a lender tab that reads her sessionStorage
+   fresh, with nothing of its own, falls back to the fixture on its own. What
+   that does not cover is a lender tab that was already open and had already
+   absorbed a live conversation into its *own* sessionStorage before the
+   restart — by then its copy is no longer "untouched", so `loadCase` would
+   otherwise keep treating it as the live case forever. This is what
+   CASE_RESET_KEY is for: a signal on the one thing every tab does share. */
+
+test("restart reaches a lender tab that is already open, mid-conversation", () => {
+  freshBridges();
+  const bridge = memoryStorage();
+  const lenderSession = memoryStorage();
+
+  /* A live conversation the lender tab has already taken in and saved as
+     its own — not "untouched" any more. */
+  borrower.sendBorrowerMessage(borrower.runScript(), "Any news on the title?", { storage: bridge });
+  const absorbed = lender.bridgeAbsorb(lender.FALLBACK_CASE.state, { storage: bridge });
+  lender.saveCase(lenderSession, absorbed.state);
+  assert.equal(openOf(lender, lender.loadCase(lenderSession).state, "borrower-message").length, 1);
+
+  /* She restarts, from a tab of her own — the lender tab above never reads
+     her sessionStorage, only the bridge they share. */
+  borrower.restart({ storage: bridge });
+
+  assert.equal(lender.pendingCaseReset(bridge, lenderSession), true);
+  const result = lender.applyCaseReset(bridge, lenderSession);
+  assert.equal(result.changed, true);
+  /* Back to the opening documents and review queue, same as a manual
+     "Reset case" — but with every document's own conversation cleared too,
+     including the fixture's own seeded handoff exchange, so nothing is left
+     for her testing to trip over on the next run. */
+  const documents = plain(result.state).documents;
+  workspace.DOCUMENT_IDS.forEach(documentId => {
+    assert.deepEqual(documents[documentId].messages, [], documentId);
+  });
+  const withoutMessages = plain(lender.fallbackCaseState());
+  workspace.DOCUMENT_IDS.forEach(documentId => {
+    withoutMessages.documents[documentId].messages = [];
+  });
+  assert.deepEqual(plain(result.state), withoutMessages);
+  assert.equal(openOf(lender, result.state, "borrower-message").length, 0);
+  assert.equal(result.announcement.key, "lender.status.reset");
+
+  /* Applying it is remembered, so the same live event does not reset the
+     desk a second time and lose whatever happens on the case after. */
+  assert.equal(lender.pendingCaseReset(bridge, lenderSession), false);
+});
+
+test("a lender tab that opens after the restart still picks it up", () => {
+  freshBridges();
+  const bridge = memoryStorage();
+  const lenderSession = memoryStorage();
+
+  borrower.sendBorrowerMessage(borrower.runScript(), "Any news on the title?", { storage: bridge });
+  const absorbed = lender.bridgeAbsorb(lender.FALLBACK_CASE.state, { storage: bridge });
+  lender.saveCase(lenderSession, absorbed.state);
+
+  /* The restart happens while nothing is open to hear it live. */
+  borrower.restart({ storage: bridge });
+
+  /* A fresh lender.html load — mirroring what its own init() does before the
+     first paint — still finds the reset waiting on the bridge. */
+  assert.equal(lender.pendingCaseReset(bridge, lenderSession), true);
+  const result = lender.applyCaseReset(bridge, lenderSession);
+  const documents = plain(result.state).documents;
+  workspace.DOCUMENT_IDS.forEach(documentId => {
+    assert.deepEqual(documents[documentId].messages, [], documentId);
+  });
+});
+
+test("two restarts in a row are each their own signal", () => {
+  freshBridges();
+  const bridge = memoryStorage();
+  const lenderSession = memoryStorage();
+
+  borrower.restart({ storage: bridge });
+  assert.equal(lender.pendingCaseReset(bridge, lenderSession), true);
+  lender.applyCaseReset(bridge, lenderSession);
+  assert.equal(lender.pendingCaseReset(bridge, lenderSession), false);
+
+  borrower.restart({ storage: bridge });
+  assert.equal(lender.pendingCaseReset(bridge, lenderSession), true, "the second restart is missed");
+});
+
+test("no restart has ever happened is not mistaken for one", () => {
+  const bridge = memoryStorage();
+  const lenderSession = memoryStorage();
+  assert.equal(lender.pendingCaseReset(bridge, lenderSession), false);
+  assert.equal(lender.applyCaseReset(bridge, lenderSession), null);
 });
 
 /* ========================================================= the role switches */
