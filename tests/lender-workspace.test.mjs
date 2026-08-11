@@ -145,14 +145,21 @@ test("full-screen mode widens the panel and offers the way back to the board", (
   assert.equal(full.includes('data-workspace-action="expand"'), false);
 });
 
-test("the tabs are a real tablist of five and aria-selected follows the active tab", () => {
+test("the tabs are a real tablist of six and aria-selected follows the active tab", () => {
   const tabs = [...lender.WORKSPACE_TABS];
-  assert.deepEqual(tabs, ["overview", "application", "documents", "risk", "audit"]);
+  assert.deepEqual(tabs, [
+    "overview",
+    "application",
+    "documents",
+    "conversation",
+    "risk",
+    "audit"
+  ]);
   for (const active of tabs) {
     const markup = lender.renderWorkspace(loanFor(), uiState({ activeTab: active }));
     assert.match(markup, /<div class="workspace-tabs" role="tablist" aria-label="/);
     assert.ok(markup.includes(shown("lender.tabs.aria-label")));
-    assert.equal(markup.match(/role="tab"/g).length, 5);
+    assert.equal(markup.match(/role="tab"/g).length, 6);
     for (const tab of tabs) {
       assert.match(markup, new RegExp(`id="tab-${tab}"`), `no tab button for ${tab}`);
       assert.match(
@@ -1461,13 +1468,11 @@ test("nothing but a human reply resolves a borrower message", () => {
 
 /* ================================= what the desk sends her, and what reaches it */
 
-/* The WhatsApp thread is the borrower's surface and is not mirrored onto the
-   desk: an officer who reads her words under the document she sent them about,
-   and again in the review item they raised, does not need a third copy in an
-   inbox. What the desk keeps is the sending — a reply that closes a queue item,
-   an unprompted message from the overview — and the receiving, over the bridge.
-   The messages themselves are still on the case, filed by document, which is
-   what these tests read. */
+/* The engine files each message under its document — that is what lets a reply
+   from the desk land back on the one document it was about — and the
+   conversation tab is the one place that reads them back as her single
+   WhatsApp thread, in the order she read it in. These tests read the same
+   per-document filing the tab and the review queue both draw from. */
 
 /* The engine files each message under its document; this is the case's whole
    exchange in time order, stable across a shared timestamp because the demo's
@@ -1542,22 +1547,132 @@ test("messages sharing a timestamp keep the order they were recorded in", () => 
   assert.deepEqual(thread.map(message => message.text), ["first", "second", "third"]);
 });
 
-test("the desk carries no WhatsApp panel — that thread is the borrower's surface", () => {
-  const loan = loanFor(conversationState());
-  const whole = lender.renderWorkspace(loan, { selectedCaseId: loan.caseId, activeTab: "risk" });
+test("the conversation tab is her whole WhatsApp thread, read from the desk", () => {
+  const state = conversationState();
+  const loan = loanFor(state);
+  const markup = lender.renderWorkspace(loan, {
+    selectedCaseId: loan.caseId,
+    activeTab: "conversation"
+  });
 
-  assert.ok(!/class="workspace-conversation"/.test(whole), "the chat panel came back");
-  assert.ok(!/id="chat-input"/.test(whole), "the chat composer came back");
-  assert.ok(!/data-case-action="send-message"/.test(whole));
-  assert.equal(
-    plain(lender.WORKSPACE_TABS).includes("conversation"),
-    false,
-    "the conversation moved behind a tab instead of leaving"
+  assert.ok(markup.includes('class="wa-thread"'), "the thread panel is missing");
+  const thread = threadOf(state);
+  /* Every message that document filing carries is on the page, escaped. */
+  for (const message of thread) {
+    assert.ok(markup.includes(lender.escapeHtml(message.text)), `missing "${message.text}"`);
+  }
+  /* Settled messages read chronologically; a borrower message still waiting
+     on an answer moves to the end, in the order it arrived relative to the
+     other messages still open — the tab's own version of a queue that never
+     lets an unanswered question scroll out of sight. */
+  const pendingIds = new Set(
+    plain(workspace.openReviewItems(state))
+      .filter(item => item.type === "borrower-message")
+      .map(item => item.messageId)
   );
-  /* And it did not simply move: the phone number and the mirrored-thread title
-     are gone from the page source altogether. */
-  assert.ok(!html.includes("lender.conversation.title"));
-  assert.ok(!html.includes("lender.conversation.subtitle"));
+  const expectedOrder = thread
+    .filter(message => !pendingIds.has(message.id))
+    .concat(thread.filter(message => pendingIds.has(message.id)));
+  const order = expectedOrder.map(message => markup.indexOf(lender.escapeHtml(message.text)));
+  for (let index = 1; index < order.length; index++) {
+    assert.ok(order[index - 1] < order[index], "messages are out of order in the markup");
+  }
+  /* A live case gets a composer wired to the same commit the overview and the
+     queue already use. */
+  assert.match(markup, /<form class="wa-composer" data-case-action="send-conversation-message">/);
+  assert.match(markup, /id="conversation-composer-input"/);
+});
+
+test("a read-only sample's conversation tab has no composer", () => {
+  const readonly = fixtureLoan("H-2026-08391");
+  const markup = lender.renderWorkspace(readonly, {
+    selectedCaseId: readonly.caseId,
+    activeTab: "conversation"
+  });
+  assert.ok(!/data-case-action="send-conversation-message"/.test(markup));
+  assert.ok(markup.includes(shown("lender.conversation.readonly")));
+});
+
+test("a message still waiting on a reply carries the pending tag; a settled one does not", () => {
+  const state = conversationState();
+  const loan = loanFor(state);
+  const markup = lender.renderWorkspace(loan, {
+    selectedCaseId: loan.caseId,
+    activeTab: "conversation"
+  });
+
+  const pendingIds = new Set(
+    plain(workspace.openReviewItems(state))
+      .filter(item => item.type === "borrower-message")
+      .map(item => item.messageId)
+  );
+  assert.ok(pendingIds.size > 0, "the fixture is supposed to leave messages open");
+
+  const bubbles = [...markup.matchAll(/<article class="wa-bubble[^>]*data-pending="(true|false)"[^>]*>([\s\S]*?)<\/article>/g)];
+  assert.equal(bubbles.length, threadOf(state).length);
+  for (const [, pending, body] of bubbles) {
+    assert.equal(
+      body.includes(shown("lender.conversation.pending")),
+      pending === "true",
+      "the tag and the data-pending attribute disagree"
+    );
+  }
+  /* At least one of each, or the fixture is not testing what it claims to. */
+  assert.ok(bubbles.some(([, pending]) => pending === "true"));
+  assert.ok(bubbles.some(([, pending]) => pending === "false"));
+});
+
+test("replying settles the pending tag and the message returns to its chronological place", () => {
+  var state = conversationState();
+  /* Both of the fixture's open messages, not just one — the assertions below
+     read the whole thread as fully settled. */
+  plain(workspace.openReviewItems(state))
+    .filter(row => row.type === "borrower-message")
+    .forEach((item, index) => {
+      /* Distinct text per reply: indexOf below can only tell two messages
+         apart in the markup if they don't read identically. */
+      state = lender.commitReply(state, item.id, "A specialist is on reply " + index + ".", {
+        timestamp: index === 0 ? AT.reply : AT.remind
+      }).state;
+    });
+  const replied = state;
+  const loan = loanFor(replied);
+  const markup = lender.renderWorkspace(loan, {
+    selectedCaseId: loan.caseId,
+    activeTab: "conversation"
+  });
+
+  /* No open borrower-message items left over from that one, so nothing in
+     the thread is still pinned as pending. */
+  const stillPending = plain(workspace.openReviewItems(replied)).filter(
+    row => row.type === "borrower-message"
+  );
+  assert.equal(stillPending.length, 0);
+  assert.ok(!markup.includes(shown("lender.conversation.pending")));
+  assert.ok(!markup.includes('data-pending="true"'));
+
+  const thread = threadOf(replied);
+  const order = thread.map(message => markup.indexOf(lender.escapeHtml(message.text)));
+  for (let index = 1; index < order.length; index++) {
+    assert.ok(order[index - 1] < order[index], "settled messages should read in plain chronological order");
+  }
+});
+
+test("the assistant's needs-review card links to the conversation tab only when a message is waiting", () => {
+  const withMessage = loanFor(conversationState());
+  const withMessageMarkup = lender.renderNeedsReview(withMessage);
+  const pendingCount = plain(workspace.openReviewItems(withMessage.state)).filter(
+    row => row.type === "borrower-message"
+  ).length;
+  assert.ok(pendingCount > 0);
+  assert.match(withMessageMarkup, /<button type="button" class="review-queue-link" data-assistant-action="conversation-tab">/);
+  assert.ok(withMessageMarkup.includes(shown("lender.conversation.pending-link", { count: pendingCount })));
+
+  /* The built-in fixture's two open items are both document exceptions, not
+     messages, so the link has nothing to point at. */
+  const withoutMessage = loanFor();
+  const withoutMessageMarkup = lender.renderNeedsReview(withoutMessage);
+  assert.ok(!withoutMessageMarkup.includes('data-assistant-action="conversation-tab"'));
 });
 
 test("what she said is still on the desk, under the document she said it about", () => {

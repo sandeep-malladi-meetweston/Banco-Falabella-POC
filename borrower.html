@@ -295,6 +295,7 @@
 
     /* ---- the case, and the specialist notice ---- */
     .status-pill{padding:5px 12px;border:1px solid var(--brand-rule);border-radius:999px;background:var(--brand-wash);color:var(--brand-deep);font-size:12px;font-weight:600;white-space:nowrap}
+    .status-pill:hover{background:#dff0e6}.status-pill:focus-visible{outline:2px solid var(--brand-deep);outline-offset:2px}
 
     /* ---- thread beside a side rail of cards ---- */
     .documents-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,330px);gap:16px;align-items:start}
@@ -1587,6 +1588,119 @@
         return writeRaw(store, CASE_STORAGE_KEY, JSON.stringify(state));
       }
 
+      /* -------------------------------------------------------- her place on the page
+       *
+       * The case state alone is not where she left off: it says nothing about
+       * which phase she is on, whether the narrative has finished, or what she
+       * has already read in the bell. Without it, reopening this tab — or
+       * switching to the lender view and back — dropped her back on the
+       * simulator, as if she had never started, and only the restart control
+       * should ever do that (§7). So her place is written down too, under
+       * its own key in the same per-tab sessionStorage, and read back before
+       * the first paint.
+       *
+       * The bridge's own memory of what it has already taken in — `bridgeSeen`
+       * and `bridgeRun` — travels with it, for a reason the case state alone
+       * does not cover: a reply the desk sent while this tab was closed is
+       * still sitting on the bridge, unabsorbed, when the tab reopens. Wiping
+       * the bridge on every load (this page's original behaviour, from when
+       * every load really was a fresh run) would throw that reply away before
+       * it was ever read. Absorbing it needs the memory of what was already
+       * folded into the state being resumed, or the same reply would be
+       * absorbed a second time on every later reload. `loadView` hands both
+       * back so `init` can choose correctly (§7): resuming a real session
+       * absorbs the backlog; a genuinely fresh one clears the bridge, exactly
+       * as it always did, so a previous demo's leftovers cannot leak into a
+       * new run.
+       *
+       * Malformed, wrongly shaped or future-version storage resets to the
+       * clean opening view, the same rule §7 already applies to the case
+       * state — a parse error must never blank the page. Each field is taken
+       * on its own terms rather than trusted whole, so one corrupted field
+       * cannot take the rest of a perfectly good session down with it.
+       */
+      var VIEW_STORAGE_KEY = "bfDemoBorrowerView:" + CASE_ID;
+      var BORROWER_VIEW_VERSION = 1;
+
+      function loadView(storage) {
+        var store = storage === undefined ? caseStorage() : storage;
+        var clean = initialViewState();
+        var fresh = { view: clean, resumed: false, bridgeSeen: {}, bridgeRun: 0 };
+        var raw = readRaw(store, VIEW_STORAGE_KEY);
+        if (!raw.ok || !raw.value) return fresh;
+        var parsed;
+        try {
+          parsed = JSON.parse(raw.value);
+        } catch (error) {
+          return fresh;
+        }
+        if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return fresh;
+        if (parsed.version !== BORROWER_VIEW_VERSION) return fresh;
+        var seen =
+          parsed.bridgeSeen && typeof parsed.bridgeSeen === "object" && !Array.isArray(parsed.bridgeSeen)
+            ? parsed.bridgeSeen
+            : {};
+        return {
+          view: {
+            cursor: typeof parsed.cursor === "number" && parsed.cursor >= 0 ? parsed.cursor : clean.cursor,
+            phase: PHASES.indexOf(parsed.phase) !== -1 ? parsed.phase : clean.phase,
+            statusKey: typeof parsed.statusKey === "string" ? parsed.statusKey : clean.statusKey,
+            thread: Array.isArray(parsed.thread) ? parsed.thread : clean.thread,
+            feed: Array.isArray(parsed.feed) ? parsed.feed : clean.feed,
+            analysing: Array.isArray(parsed.analysing) ? parsed.analysing : clean.analysing,
+            verified: Array.isArray(parsed.verified) ? parsed.verified : clean.verified,
+            escalated: parsed.escalated === true,
+            finished: parsed.finished === true,
+            /* Autoplay never resumes on its own on a fresh load — only a body
+               she is looking at schedules a beat (§ the later seam) — so a run
+               that was mid-play reopens paused rather than racing ahead of a
+               page she has not seen yet. */
+            paused: true,
+            started: parsed.started === true,
+            form: copyForm(parsed.form),
+            speed: SPEEDS.indexOf(parsed.speed) !== -1 ? parsed.speed : clean.speed,
+            openDocumentId: typeof parsed.openDocumentId === "string" ? parsed.openDocumentId : null,
+            drawerTab: DRAWER_TABS.indexOf(parsed.drawerTab) !== -1 ? parsed.drawerTab : "review",
+            notificationsOpen: parsed.notificationsOpen === true,
+            seenNotifications: Array.isArray(parsed.seenNotifications) ? parsed.seenNotifications : [],
+            scrollTop: false,
+            currentDocumentId:
+              typeof parsed.currentDocumentId === "string" ? parsed.currentDocumentId : undefined,
+            state: workspace.normalizeState(parsed.state, {
+              submittedAt: SUBMITTED_AT,
+              checklistStartedAt: CHECKLIST_STARTED_AT
+            })
+          },
+          resumed: true,
+          bridgeSeen: seen,
+          bridgeRun: typeof parsed.bridgeRun === "number" ? parsed.bridgeRun : 0
+        };
+      }
+
+      function saveView(storage, viewState) {
+        var store = storage === undefined ? caseStorage() : storage;
+        var payload = {};
+        Object.keys(viewState).forEach(function (key) {
+          payload[key] = viewState[key];
+        });
+        payload.version = BORROWER_VIEW_VERSION;
+        /* So a reload can tell which bridge entries are already reflected in
+           the state it is about to resume, and only ever absorb the rest. */
+        payload.bridgeSeen = bridgeSeen;
+        payload.bridgeRun = bridgeRun;
+        return writeRaw(store, VIEW_STORAGE_KEY, JSON.stringify(payload));
+      }
+
+      function clearView(storage) {
+        var store = storage === undefined ? caseStorage() : storage;
+        if (!store) return;
+        try {
+          store.removeItem(VIEW_STORAGE_KEY);
+        } catch (error) {
+          /* Nothing to clear if storage already refuses. */
+        }
+      }
+
       /* ------------------------------------------------------------ the bridge */
 
       function emptyBridge() {
@@ -1657,6 +1771,18 @@
       function forgetBridge(run) {
         bridgeSeen = {};
         bridgeRun = run;
+      }
+
+      /* The other half of what `saveView` writes down: which bridge entries
+         this page had already taken in, restored before the first paint so a
+         reload does not re-absorb a reply it folded into the state it is
+         about to resume. */
+      function applyBridgeMemory(snapshot) {
+        bridgeSeen =
+          snapshot && snapshot.bridgeSeen && typeof snapshot.bridgeSeen === "object"
+            ? snapshot.bridgeSeen
+            : {};
+        bridgeRun = snapshot && typeof snapshot.bridgeRun === "number" ? snapshot.bridgeRun : 0;
       }
 
       /**
@@ -1799,6 +1925,7 @@
         /* A storage that refuses is not a reason to refuse the restart: the demo
            carries on in memory and the page says so once. */
         saveCase(forCase, opening.state);
+        clearView(forCase);
         pendingBeat = null;
         return opening;
       }
@@ -2348,9 +2475,13 @@
           "</span>" +
           renderDemoControls(viewState) +
           renderNotificationBell(viewState) +
-          /* The switch lands on the pipeline board, not inside this case: the
-             other view opens on its board, and a case opens on a click. */
-          '<a class="demo-role-switch" href="lender.html" aria-label="' +
+          /* Names the case in the query, so the desk opens straight on it —
+             the same overview, notifications and snapshot the officer would
+             have been looking at — rather than the bare board every switch
+             used to land on regardless of which case anyone was showing. */
+          '<a class="demo-role-switch" href="lender.html?case=' +
+          encodeURIComponent(CASE_ID) +
+          '" aria-label="' +
           text("borrower.switch-to-lender-aria") +
           '">' +
           text("borrower.switch-to-lender") +
@@ -2943,6 +3074,10 @@
       /* Which case this is, and where it stands. It used to be a masthead over
          the documents phase, which cost a screenful of height to say two things
          that never change; it belongs in the rail beside the phase it describes. */
+      /* The status pill names the same open work the bell already lists, so
+         it opens the same tray rather than a second way of showing it — one
+         click from wherever she reads "2 open items", not just from the
+         bell. */
       function renderCaseMeta(viewState) {
         if (viewState.phase !== "documents") return "";
         var openItems = workspace.openReviewItems(viewState.state);
@@ -2953,9 +3088,11 @@
           '<span class="rail-property">' +
           text("borrower.portal.property") +
           "</span></span>" +
-          '<span class="status-pill">' +
+          '<button type="button" class="status-pill" data-notifications="toggle" aria-expanded="' +
+          (viewState.notificationsOpen ? "true" : "false") +
+          '" aria-controls="notification-panel">' +
           text(viewState.statusKey, { count: openItems.length }) +
-          "</span>"
+          "</button>"
         );
       }
 
@@ -3542,7 +3679,13 @@
 
       /* ================================================================= init */
 
-      var view = initialViewState();
+      var loadedView = loadView(caseStorage());
+      var view = loadedView.view;
+      /* Restored alongside the view it was saved with, so a page that is
+         genuinely resuming does not re-absorb a reply already folded into
+         that view (§ her place on the page). A fresh page starts this at its
+         own defaults, which is what `bridgeClear` below then confirms. */
+      applyBridgeMemory(loadedView);
       var restoreFocusTo = null;
 
       function announce(key, params) {
@@ -3558,9 +3701,15 @@
       }
 
       /* The case is seeded on load and re-seeded after every change, so switching
-         to the lender view in this tab hands over the story as it stands. */
+         to the lender view in this tab hands over the story as it stands. Her
+         own place in the page — which phase, whether the narrative has
+         finished, what she has read — is saved the same way, so reopening
+         this tab, or switching views and back, resumes exactly here rather
+         than dropping her on the simulator (§7). Only `restart` empties it. */
       function persist() {
-        if (!saveCase(caseStorage(), view.state)) announceViewOnly();
+        var caseOk = saveCase(caseStorage(), view.state);
+        var viewOk = saveView(caseStorage(), view);
+        if (!caseOk || !viewOk) announceViewOnly();
       }
 
       function statusAnnouncementKey() {
@@ -4361,12 +4510,28 @@
         app.addEventListener("touchmove", onThreadGesture, { passive: true, capture: true });
         document.addEventListener("keydown", onKeydown);
         if (globalThis.addEventListener) globalThis.addEventListener("storage", onStorage);
-        /* Whatever the previous run left on the bridge is not this run's thread. */
-        bridgeClear(bridgeStorage());
+        var arrived = null;
+        if (loadedView.resumed) {
+          /* Resuming a real session: a reply sent while this tab was closed
+             is still waiting on the bridge, unabsorbed, and belongs on the
+             page she is about to see — not thrown away the way a fresh run's
+             bridge is (§ her place on the page). */
+          var backlog = bridgeAbsorb(view, { storage: bridgeStorage() });
+          if (backlog.changed) {
+            view = backlog.viewState;
+            arrived = backlog.announcement;
+          }
+        } else {
+          /* A genuinely fresh run: whatever a previous run left on the
+             bridge is not this run's thread. */
+          bridgeClear(bridgeStorage());
+        }
         render();
         persist();
-        /* The page opens ready, not running. */
-        announce("borrower.control.idle");
+        /* Whichever she should hear first: a reply that arrived while she
+           was away, or — the ordinary case — that the page is ready. */
+        if (arrived) announce(arrived.key, arrived.params);
+        else announce("borrower.control.idle");
       }
 
       /* ================================================================== api */
@@ -4374,6 +4539,8 @@
       globalThis.FalabellaBorrower = {
         CASE_ID: CASE_ID,
         CASE_STORAGE_KEY: CASE_STORAGE_KEY,
+        VIEW_STORAGE_KEY: VIEW_STORAGE_KEY,
+        BORROWER_VIEW_VERSION: BORROWER_VIEW_VERSION,
         MESSAGE_BRIDGE_KEY: MESSAGE_BRIDGE_KEY,
         BRIDGE_LIMIT: BRIDGE_LIMIT,
         BRIDGE_ROLE: BRIDGE_ROLE,
@@ -4410,6 +4577,7 @@
         openDocumentPreview: openDocumentPreview,
         closeDocument: closeDocument,
         setDrawerTab: setDrawerTab,
+        toggleNotifications: toggleNotifications,
         trapFocus: trapFocus,
         handleDrawerKeydown: handleDrawerKeydown,
         sendBorrowerMessage: sendBorrowerMessage,
@@ -4434,6 +4602,10 @@
         /* ---------------------------------------------------------- the bridge */
         loadCase: loadCase,
         saveCase: saveCase,
+        loadView: loadView,
+        saveView: saveView,
+        clearView: clearView,
+        applyBridgeMemory: applyBridgeMemory,
         bridgeRead: bridgeRead,
         bridgeSend: bridgeSend,
         bridgeAbsorb: bridgeAbsorb,

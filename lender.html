@@ -23,7 +23,7 @@
     }
     *{box-sizing:border-box}body{margin:0;background:var(--shell);color:var(--ink);font:14px/1.45 var(--body)}button,input,select,textarea{font:inherit}button{cursor:pointer}[inert]{pointer-events:none;user-select:none}.skip-link{position:absolute;left:-999px}.skip-link:focus{left:12px;top:12px;z-index:100;background:#fff;padding:8px}
     .topbar{position:sticky;top:0;z-index:10;height:64px;display:flex;align-items:center;gap:16px;padding:0 22px;background:var(--paper);border-bottom:1px solid var(--rule)}
-    .topbar-logo{width:152px;height:auto}.portal-label{padding-left:16px;border-left:1px solid var(--rule);font-family:var(--display);font-weight:600}.global-search{margin-left:auto;width:min(280px,26vw)}.demo-role-switch{border:1px solid var(--brand-rule);border-radius:6px;padding:8px 11px;background:var(--brand-wash);color:var(--brand-deep);font-size:12px;font-weight:600;text-decoration:none}/* Language and unit are one cluster: a single border round both, a hairline
+    .topbar-logo-button{display:inline-flex;padding:0;border:0;border-radius:6px;background:none}.topbar-logo-button:focus-visible{outline:2px solid var(--brand);outline-offset:3px}.topbar-logo{width:152px;height:auto}.portal-label{padding-left:16px;border-left:1px solid var(--rule);font-family:var(--display);font-weight:600}.global-search{margin-left:auto;width:min(280px,26vw)}.demo-role-switch{border:1px solid var(--brand-rule);border-radius:6px;padding:8px 11px;background:var(--brand-wash);color:var(--brand-deep);font-size:12px;font-weight:600;text-decoration:none}/* Language and unit are one cluster: a single border round both, a hairline
    between them, and the groups inside stripped of their own boxes. Two
    identical bordered pills side by side read as four loose buttons. */
 .control-cluster{flex:0 0 auto;display:inline-flex;align-items:center;gap:3px;height:36px;padding:3px;border:1px solid var(--rule);border-radius:8px;background:var(--shell)}
@@ -55,6 +55,14 @@
     .loan-card.has-flag .loan-case,.loan-card.has-flag .loan-borrower{padding-right:104px}
     .pending-flag{position:absolute;top:8px;right:8px;display:inline-flex;align-items:center;gap:4px;max-width:100px;padding:3px 6px;border:1px solid #e2c98f;border-radius:10px;background:#fdf6e3;color:#8a6a12;font:600 9.5px/1.25 var(--display);text-align:right}
     .pending-flag[data-pending~="title"][data-pending~="inspection"]{border-color:#e0b3b3;background:#fbf0f0;color:#9a3d3d}
+    /* The drive link: a sibling of the card's button, not a child of it, so it
+       is its own keyboard-reachable control and never collides with the
+       pending-checks flag in the same corner. */
+    .loan-card-shell{position:relative}
+    .loan-card-shell .loan-card{margin-bottom:6px}
+    .drive-link{display:inline-flex;align-items:center;gap:5px;margin:0 0 9px;padding:4px 8px;border:1px solid #d5dde3;border-radius:6px;background:#fff;color:var(--brand-deep);font:600 10.5px var(--display);text-decoration:none}
+    .drive-link:hover{background:var(--brand-wash);border-color:var(--brand)}
+    .drive-link svg{width:12px;height:12px;flex:0 0 auto}
     .loan-card{width:100%;display:block;margin:0 0 9px;padding:12px;border:1px solid #d5dde3;border-radius:8px;background:#fff;color:var(--ink);text-align:left;box-shadow:0 1px 3px rgba(24,33,43,.04)}.loan-card:hover{border-color:#aebac4;box-shadow:0 5px 14px rgba(24,33,43,.08)}.loan-card.needs-review{border-left:4px solid var(--brand-lime);padding-left:9px}.loan-case{display:block;color:var(--muted);font:600 10px var(--mono);text-transform:uppercase}.loan-borrower{display:block;margin-top:3px;font-weight:700}.loan-meta,.loan-substatus,.loan-deed{display:block;margin-top:4px;color:var(--slate);font-size:11px}.review-reason{display:inline-flex;gap:4px;align-items:center;margin-top:8px;padding:3px 6px;border-radius:10px;background:var(--brand-wash);color:var(--brand-deep);font-size:10px;font-weight:600}.loan-borrower,.loan-meta,.review-reason,.record-message p{overflow-wrap:anywhere}
     .empty-column{padding:14px;border:1px dashed #cbd4dc;border-radius:8px;color:var(--muted);font-size:11px;text-align:center}.empty-search{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;padding:12px 14px;border:1px solid var(--rule);border-radius:8px;background:#fff}.empty-search button{border:1px solid var(--ink);border-radius:6px;padding:7px 10px;background:var(--ink);color:#fff}button:disabled,textarea:disabled{cursor:not-allowed;opacity:.52}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid var(--brand);outline-offset:3px}
     .nav-filter:hover{background:#f1f4f6}.nav-filter[aria-pressed="true"]:hover{background:var(--ink)}.demo-role-switch:hover{background:#dff0e6}.board-toolbar select:hover,.global-search:hover{border-color:#aebac4}
@@ -265,6 +273,10 @@
        button, since it goes somewhere rather than doing something. */
     .review-item-open{flex:0 0 auto;margin-left:auto;padding:0;border:0;background:none;color:var(--brand);font:600 11.5px var(--display);text-decoration:underline;text-decoration-color:transparent;transition:text-decoration-color .15s ease}
     .review-item-open:hover{text-decoration-color:var(--brand)}
+    /* Same shape as .review-item-open, one level up: a link out of the queue
+       card itself rather than out of a single row. */
+    .review-queue-link{display:block;margin:-4px 0 10px;padding:0;border:0;background:none;color:var(--brand);font:600 11.5px var(--display);text-align:left;text-decoration:underline;text-decoration-color:transparent;transition:text-decoration-color .15s ease}
+    .review-queue-link:hover{text-decoration-color:var(--brand)}
     /* Nothing waiting, said once and quietly, where the queue would have been. */
     .all-clear{display:flex;align-items:center;gap:7px;margin:0 0 20px;color:var(--slate);font-size:12.5px}
     .all-clear span{display:grid;place-items:center;flex:0 0 16px;width:16px;height:16px;border-radius:50%;background:var(--brand);color:#fff;font-size:9px;font-weight:800}
@@ -274,9 +286,45 @@
        and translates with everything else. The desk sees what she sent, not just
        what was made of it. */
     .scan{margin:10px 0 16px;padding:14px;display:flex;justify-content:center;background:#e9eeec;border-radius:9px}.scan-page{position:relative;width:100%;max-width:420px;padding:20px 22px 16px;border-radius:3px;background:#fff;background-image:linear-gradient(rgba(0,0,0,.012) 1px,transparent 1px);background-size:100% 3px;box-shadow:0 2px 10px rgba(0,0,0,.16);font-size:11.5px}.scan-org{color:#7d8b84;font-size:9px;font-weight:700;letter-spacing:.13em;text-align:center;text-transform:uppercase}.scan-title{margin:5px 0 14px;padding-bottom:9px;border-bottom:1px solid #e7ecea;color:#2b3833;font-size:13px;font-weight:700;text-align:center}.scan-row{position:relative;display:flex;gap:10px;padding:5px 6px;border-radius:4px}.scan-row .scan-key{flex:0 0 40%;color:#7d8b84}.scan-row .scan-value{color:#2b3833;font-weight:600;overflow-wrap:anywhere}.scan-row.mismatch{background:#fdeeec;outline:1.5px dashed var(--danger);outline-offset:1px}.scan-mark{position:absolute;right:-9px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:var(--danger);color:#fff;font-size:10px;font-weight:800}.scan-lines{margin-top:14px;display:grid;gap:6px}.scan-lines i{display:block;height:5px;border-radius:3px;background:#eef2f0}.scan-lines i:nth-child(2){width:88%}.scan-lines i:nth-child(3){width:72%}.scan-lines i:nth-child(5){width:54%}.scan-stamp{margin:14px 0 0;color:#a5b1ab;font:400 9.5px var(--mono);letter-spacing:.05em;text-align:right}
+    /* The conversation tab: the same bubbles her WhatsApp thread shows, read
+       from this side. Hers align left in white, the desk's own words — lender
+       and assistant alike, both "us" from here — align right in green, the
+       mirror of how her own page tells the two apart. */
+    .wa-thread{display:flex;flex-direction:column;min-height:360px;max-height:64vh;border:1px solid var(--rule);border-radius:10px;overflow:hidden;background:var(--paper)}
+    .wa-head{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--brand-deep);color:#fff}
+    .wa-avatar{display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;border-radius:50%;background:#fff;color:var(--brand);font:700 13px var(--display)}
+    .wa-head strong{display:block;font:600 13px var(--display)}
+    .wa-head small{display:block;color:#cfe3d6;font-size:10.5px}
+    .wa-body{flex:1;overflow-y:auto;padding:14px;background:#eef1ec}
+    .wa-day{display:block;margin:0 auto 12px;width:max-content;padding:3px 10px;border-radius:8px;background:#fff;color:var(--slate);font:600 9.5px var(--mono);letter-spacing:.06em}
+    .wa-bubble{position:relative;max-width:82%;margin:0 0 10px;padding:9px 11px;border-radius:11px;background:#fff;box-shadow:0 1px 1px rgba(24,33,43,.08);overflow-wrap:anywhere}
+    .wa-bubble.borrower{border-top-left-radius:3px}
+    .wa-bubble.lender,.wa-bubble.assistant{margin-left:auto;background:#dcf3dd;border-top-right-radius:3px}
+    .wa-bubble-author{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 8px;margin-bottom:3px;color:var(--brand-deep);font:600 9.5px var(--mono);text-transform:uppercase}
+    .wa-bubble-doc{color:var(--muted);font-weight:600;text-transform:none}
+    .wa-bubble p{margin:0;font-size:13px;line-height:1.45;overflow-wrap:anywhere}
+    .wa-bubble time{display:block;margin-top:4px;color:var(--muted);font-size:10px}
+    .wa-bubble[data-pending="true"]{box-shadow:0 0 0 1px #f0d9a8}
+    .wa-pending-tag{display:inline-flex;align-items:center;gap:4px;margin-top:6px;padding:2px 7px;border-radius:999px;background:#fdf3e2;color:var(--warn);font:700 9.5px var(--mono);text-transform:uppercase;letter-spacing:.04em}
+    .wa-empty{padding:22px 14px;color:var(--slate);text-align:center;font-size:12.5px}
+    .wa-composer{display:flex;align-items:center;gap:8px;padding:10px 12px;background:#fff;border-top:1px solid var(--rule)}
+    .wa-composer input{flex:1;min-width:0;height:36px;padding:0 13px;border:1px solid #cbd4dc;border-radius:999px;background:#fff}
+    .wa-composer button{flex:0 0 auto;height:36px;padding:0 14px;border:0;border-radius:999px;background:var(--brand);color:#fff;font:600 12.5px var(--display)}
+    .wa-composer button:hover{background:#00692c}
+    .wa-composer input:disabled,.wa-composer button:disabled{opacity:.55;cursor:not-allowed}
     @media(max-width:900px){.loan-workspace{flex-direction:column}.workspace-main{flex:1 1 54%;min-height:0}.workspace-rail{flex:0 1 46%;min-height:210px;border-left:0;border-top:1px solid var(--rule)}.assistant-launcher{right:12px;bottom:14px}.portal-layout{grid-template-columns:1fr}.portfolio-nav{position:static;height:auto;display:flex;gap:6px;overflow-x:auto;border-right:0;border-bottom:1px solid var(--rule)}.nav-filter{width:auto;min-width:max-content}.portal-main{padding:20px}.loan-board{grid-template-columns:repeat(7,180px)}.loan-workspace{left:0;width:100%;border-left:0}.global-search{width:100%;order:4}.topbar{height:auto;flex-wrap:wrap;padding:12px 16px}.workspace-grid{grid-template-columns:1fr}}
     @media(max-width:620px){.metrics{grid-template-columns:1fr}.board-toolbar{align-items:stretch;flex-direction:column}.board-toolbar select{width:100%}.workspace-header,.workspace-panel{padding-left:17px;padding-right:17px}.workspace-tabs{padding:0 8px;overflow-x:auto}.workspace-tabs button{min-width:max-content}.snapshot-grid,.application-record,.comparison{grid-template-columns:1fr}.review-actions,.action-bar{align-items:stretch;flex-direction:column}.review-item .review-actions{align-items:stretch;flex-direction:column}.review-item textarea{flex:0 0 auto;width:100%;height:38px}.history-row{align-items:flex-start;flex-direction:column}.topbar-logo{width:130px}.portal-label{display:none}}
     @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+    /* A tab click, opening a document or the assistant all rebuild the panel
+       from scratch (render() replaces the whole page as one string, board
+       included), so without help the new content simply appears — a hard cut
+       that reads as the page reloading. A fresh `.workspace-panel` is exactly
+       what gets inserted on every one of those changes, so fading it in is
+       enough to turn that cut into a swap, with no change to what render()
+       actually does or when. `animation-duration` is already forced to near
+       zero under reduced motion by the rule above. */
+    @keyframes workspace-panel-in{from{opacity:0}to{opacity:1}}
+    .workspace-panel{animation:workspace-panel-in .16s ease}
   </style>
 </head>
 <!-- The skip link is the first focusable thing in the body, and its name is copy
@@ -387,6 +435,7 @@
          FalabellaCredit. Nothing derived is written down twice (§3.1). */
       var FALLBACK_CASE = {
         caseId: CASE_ID,
+        driveUrl: "https://drive.google.com/drive/folders/1eFFTCGNeIAmL_9II0XLSEyhwF00DEqp_",
         submittedAt: "2026-08-05T13:40:00.000Z",
         checklistStartedAt: "2026-08-05T13:45:00.000Z",
         property: {
@@ -433,6 +482,7 @@
 
       var SECOND_CASE = {
         caseId: SECOND_CASE_ID,
+        driveUrl: "https://drive.google.com/drive/folders/1vERlY5gxpbj1_WLEWEKb8mBIM4h2N5Iq",
         submittedAt: "2026-07-22T11:00:00.000Z",
         checklistStartedAt: "2026-07-22T11:05:00.000Z",
         property: {
@@ -1576,6 +1626,7 @@
           state: liveState,
           reviewItems: liveState.reviewItems,
           readonly: false,
+          driveUrl: data.driveUrl || null,
           caseData: data
         };
       }
@@ -1773,8 +1824,8 @@
         { key: "amount", labelKey: "lender.toolbar.sort-amount" }
       ];
 
-      /* The five tabs of §5.5. The hash may name any of them and nothing else. */
-      var WORKSPACE_TABS = ["overview", "application", "documents", "risk", "audit"];
+      /* The six tabs of §5.5. The hash may name any of them and nothing else. */
+      var WORKSPACE_TABS = ["overview", "application", "documents", "conversation", "risk", "audit"];
 
       var DEFAULT_VIEW_STATE = {
         view: "pipeline",
@@ -1834,7 +1885,7 @@
 
       /* =========================================================== hash routing */
 
-      /* `#case=<id>&mode=drawer|full&tab=overview|application|documents|risk|audit`.
+      /* `#case=<id>&mode=drawer|full&tab=overview|application|documents|conversation|risk|audit`.
          Nothing here trusts the hash: an unknown mode or tab reads as the default
          rather than reaching a renderer, and an unknown case id is dropped by
          viewStateForCaseHash, which is the only place that knows the portfolio. */
@@ -2154,6 +2205,24 @@
         );
       }
 
+      /* The case's own folder, for the live loans only — a fixture has nowhere
+         real to link to. It sits below the card rather than as a corner badge:
+         the top-right corner is already the pending-checks flag's, and a link
+         nested inside the card's own button would be invalid markup and
+         unreachable by keyboard, so it is a sibling control instead. */
+      function renderDriveLink(loan) {
+        if (!loan.driveUrl) return "";
+        return (
+          '<a class="drive-link" href="' +
+          escapeHtml(loan.driveUrl) +
+          '" target="_blank" rel="noopener noreferrer" aria-label="' +
+          text("lender.card.drive-aria", { case: loan.caseId }) +
+          '"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1.5 3.5A1 1 0 0 1 2.5 2.5h3.4a1 1 0 0 1 .8.4l1 1.1h4.8a1 1 0 0 1 1 1v7.5a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>' +
+          text("lender.card.drive") +
+          "</a>"
+        );
+      }
+
       /* §5.3's card: case id, borrower, requested UF, one-line substatus, deed
          date — plus, when the case has open work, the lime left border *and* the
          reason chip that says so in words, and in Underwriting the corner flag
@@ -2216,6 +2285,17 @@
         );
       }
 
+      /* A card, plus its drive link when it has one. The link is a sibling of
+         the card's button rather than something inside it — renderLoanCard's
+         own contract (a bare `<button>`) is unchanged, and only the two live
+         cases with a folder to link to gain the wrapping element at all. */
+      function renderLoanCardEntry(loan) {
+        var driveLink = renderDriveLink(loan);
+        return driveLink
+          ? '<div class="loan-card-shell">' + renderLoanCard(loan) + driveLink + "</div>"
+          : renderLoanCard(loan);
+      }
+
       /* Seven columns, always. An empty stage keeps its dashed placeholder rather
          than collapsing, so the shape of the pipeline is always legible (§5.3). */
       function renderBoardColumns(groups) {
@@ -2234,7 +2314,7 @@
             loans.length +
             "</span></h2>" +
             (loans.length
-              ? loans.map(renderLoanCard).join("")
+              ? loans.map(renderLoanCardEntry).join("")
               : '<p class="empty-column">' + text("lender.board.empty-column") + "</p>") +
             "</section>"
           );
@@ -2245,9 +2325,11 @@
         return (
           '<header class="topbar"' +
           boardAttributes +
-          '><img class="topbar-logo" src="assets/logo-bf.svg" alt="' +
+          '><button type="button" class="topbar-logo-button" id="reset-filters" aria-label="' +
+          text("lender.logo-reset-aria") +
+          '"><img class="topbar-logo" src="assets/logo-bf.svg" alt="' +
           text("lender.logo-alt") +
-          '"><span class="portal-label">' +
+          '"></button><span class="portal-label">' +
           text("lender.title") +
           "</span>" +
           '<input class="global-search" id="case-search" type="search" value="' +
@@ -3409,6 +3491,141 @@
           "</div></section>" +
           /* The source checks belong to the case that was simulated. */
           (loan.readonly ? "" : renderSourceChecks())
+        );
+      }
+
+      /* ======================================================= the conversation
+       *
+       * Every message the case carries, in the one order she read them in.
+       * `record.messages` is filed one document at a time — that is what lets a
+       * reply from the desk land back on the document it was about — so this is
+       * the only place that puts them back together as the single thread her
+       * phone shows. It reads, never writes anything of its own: the messages
+       * come from the same records the Documents tab and the review queue
+       * already carry, so answering from here, from a document, or from a
+       * queued item are three doors onto the same room, not three rooms.
+       */
+      /* A message she is still waiting to hear back on: the one a still-open
+         `borrower-message` review item was raised from. The same fact the
+         Notifications queue already reads off `openReviewItems` — this is
+         the same open work, seen from inside the thread instead of the
+         queue. */
+      function pendingMessageIds(state) {
+        var ids = {};
+        workspace.openReviewItems(state).forEach(function (item) {
+          if (item.type === "borrower-message" && item.messageId) ids[item.messageId] = true;
+        });
+        return ids;
+      }
+
+      function caseConversation(loan) {
+        var pending = pendingMessageIds(loan.state);
+        var all = [];
+        workspace.DOCUMENT_IDS.forEach(function (documentId) {
+          var record = loan.state.documents[documentId];
+          if (!record) return;
+          record.messages.forEach(function (message, index) {
+            all.push({
+              id: message.id,
+              author: message.author,
+              text: message.text,
+              timestamp: message.timestamp,
+              documentId: documentId,
+              order: index,
+              pending: Boolean(pending[message.id])
+            });
+          });
+        });
+        /* Sort is not guaranteed stable across every engine this might run in
+           (§documentsByAttention), so two messages filed in the same minute
+           keep the order they were pushed onto their own document in. */
+        all.sort(function (a, b) {
+          if (a.timestamp !== b.timestamp) return a.timestamp < b.timestamp ? -1 : 1;
+          return a.order - b.order;
+        });
+        /* Still open moves to the end, in the order it arrived relative to
+           the other messages still open — the thread's own version of a
+           queue that never lets an unanswered question scroll out of sight.
+           History that is already settled keeps its place, chronological
+           among itself. */
+        var settled = all.filter(function (message) {
+          return !message.pending;
+        });
+        var open = all.filter(function (message) {
+          return message.pending;
+        });
+        return settled.concat(open);
+      }
+
+      function renderConversationBubble(loan, message) {
+        return (
+          '<article class="wa-bubble ' +
+          escapeHtml(message.author) +
+          '" data-pending="' +
+          (message.pending ? "true" : "false") +
+          '"><span class="wa-bubble-author"><span>' +
+          escapeHtml(t("lender.actor." + message.author)) +
+          '</span><span class="wa-bubble-doc">' +
+          escapeHtml(documentLabel(loan, message.documentId)) +
+          "</span></span><p>" +
+          escapeHtml(message.text) +
+          '</p><time datetime="' +
+          escapeHtml(message.timestamp) +
+          '">' +
+          escapeHtml(formatTimestamp(message.timestamp)) +
+          "</time>" +
+          (message.pending
+            ? '<span class="wa-pending-tag"><span aria-hidden="true">●</span> ' +
+              text("lender.conversation.pending") +
+              "</span>"
+            : "") +
+          "</article>"
+        );
+      }
+
+      function renderConversationTab(loan) {
+        var thread = caseConversation(loan);
+        var disabled = loan.readonly ? " disabled" : "";
+        return (
+          sectionOpen("lender.conversation.heading") +
+          '<div class="wa-thread" aria-label="' +
+          text("lender.conversation.aria-label", { borrower: loan.borrowerName }) +
+          '">' +
+          '<div class="wa-head"><span class="wa-avatar" aria-hidden="true">' +
+          escapeHtml(loan.borrowerName.slice(0, 1)) +
+          "</span><div><strong>" +
+          escapeHtml(loan.borrowerName) +
+          "</strong><small>" +
+          text("lender.conversation.subtitle") +
+          "</small></div></div>" +
+          '<div class="wa-body">' +
+          (thread.length
+            ? '<span class="wa-day">' +
+              text("lender.conversation.today") +
+              "</span>" +
+              thread
+                .map(function (message) {
+                  return renderConversationBubble(loan, message);
+                })
+                .join("")
+            : '<p class="wa-empty">' + text("lender.conversation.empty") + "</p>") +
+          "</div>" +
+          (loan.readonly
+            ? '<p class="readonly-note wa-composer">' + text("lender.conversation.readonly") + "</p>"
+            : '<form class="wa-composer" data-case-action="send-conversation-message">' +
+              '<label class="sr-only" for="conversation-composer-input">' +
+              text("lender.conversation.placeholder", { borrower: loan.borrowerName }) +
+              "</label>" +
+              '<input type="text" id="conversation-composer-input" name="message" autocomplete="off" placeholder="' +
+              text("lender.conversation.placeholder", { borrower: loan.borrowerName }) +
+              '"' +
+              disabled +
+              '><button type="submit"' +
+              disabled +
+              ">" +
+              text("lender.conversation.send") +
+              "</button></form>") +
+          "</div></section>"
         );
       }
 
@@ -4888,6 +5105,7 @@
             "</p>"
           );
         }
+        var pendingCount = Object.keys(pendingMessageIds(loan.state)).length;
         return (
           '<section class="review-queue-card needs-review-card" id="needs-review-card"' +
           ' tabindex="-1" aria-labelledby="review-queue-title">' +
@@ -4896,6 +5114,15 @@
           '</h3><span>' +
           text("lender.overview.open-count", { count: waiting }) +
           "</span></div>" +
+          /* Same open work, seen from inside her actual words rather than a
+             reply box: a way into the conversation tab for the messages
+             specifically, since a reason chip that says "message" is not the
+             same as reading what she wrote. */
+          (pendingCount
+            ? '<button type="button" class="review-queue-link" data-assistant-action="conversation-tab">' +
+              text("lender.conversation.pending-link", { count: pendingCount }) +
+              " →</button>"
+            : "") +
           '<div class="review-queue-list">' +
           rows
             .map(function (row, position) {
@@ -5074,11 +5301,13 @@
             ? renderApplicationTab(loan)
             : tab === "documents"
               ? renderDocumentsTab(loan)
-              : tab === "risk"
-                ? renderRiskTab(loan)
-                : tab === "audit"
-                  ? renderAuditTab(loan)
-                  : renderOverviewTab(loan, view);
+              : tab === "conversation"
+                ? renderConversationTab(loan)
+                : tab === "risk"
+                  ? renderRiskTab(loan)
+                  : tab === "audit"
+                    ? renderAuditTab(loan)
+                    : renderOverviewTab(loan, view);
 
         return (
           '<div class="workspace-backdrop" data-workspace-action="close"></div>' +
@@ -5147,12 +5376,11 @@
           "</div>" +
           /* The rail carries the verdict on the file, beside whatever tab the
              officer is reading rather than behind one of them. The WhatsApp
-             thread is not here: that conversation is the borrower's surface,
-             and mirroring it onto the desk put a second inbox in front of an
-             officer who already reads her words twice — under the document she
-             sent them about, and in the review item they raised. The sample
-             notice that used to sit on top of the record is gone too; it is a
-             fact about the case, so it is in the bell with the rest. */
+             thread itself lives one tab over, in Conversation, rather than in
+             the rail: it is a record to read start to finish, not a fact to
+             glance at beside whichever other tab is open. The sample notice
+             that used to sit on top of the record is gone too; it is a fact
+             about the case, so it is in the bell with the rest. */
           '<div class="workspace-body">' +
           '<div class="workspace-panel" id="workspace-panel" tabindex="0" role="tabpanel" aria-labelledby="tab-' +
           tab +
@@ -5917,6 +6145,25 @@
               announceFilters(list);
             });
           }
+          /* The logo as "clear every filter": the nav is one button per stage
+             now, with nothing left to click back to the whole board (§ nav
+             simplification), and the toolbar's three selects plus the search
+             box are three more places a filter can be left standing. One
+             control that always returns to the unfiltered board beats asking
+             the officer to remember which of the four she set. */
+          var resetFilters = root.querySelector("#reset-filters");
+          if (resetFilters) {
+            resetFilters.addEventListener("click", function () {
+              viewState.view = DEFAULT_VIEW_STATE.view;
+              viewState.stage = DEFAULT_VIEW_STATE.stage;
+              viewState.reviewType = DEFAULT_VIEW_STATE.reviewType;
+              viewState.query = DEFAULT_VIEW_STATE.query;
+              render();
+              var refreshed = root.querySelector("#reset-filters");
+              if (refreshed) refreshed.focus();
+              announceFilters(list);
+            });
+          }
           root.querySelectorAll("[data-case-id]").forEach(function (card) {
             card.addEventListener("click", function () {
               openCase(card.getAttribute("data-case-id"));
@@ -6222,6 +6469,31 @@
               announce("lender.assistant.asked");
             });
           });
+          /* The conversation tab's own composer: the same `commitConversationMessage`
+             that already exists for "I'll come back to you today" without a queue
+             entry to hang it on (§conversationDocumentId), now with a place on
+             screen to type it from. Blank text and a read-only case both refuse
+             inside the commit itself, so this only has to read the field and hand
+             it over. */
+          root.querySelectorAll('form[data-case-action="send-conversation-message"]').forEach(function (form) {
+            form.addEventListener("submit", function (event) {
+              event.preventDefault();
+              var field = form.querySelector("#conversation-composer-input");
+              var text = field ? field.value : "";
+              var result = commitConversationMessage(liveStates[loan.caseId], text, {
+                timestamp: nextInstant(),
+                storage: loan.caseId === CASE_ID ? bridgeStorage() : undefined
+              });
+              if (result.changed && field) field.value = "";
+              apply(loan.caseId, result);
+              var again = document.getElementById("conversation-composer-input");
+              if (again) again.focus();
+              if (result.changed) {
+                var body = document.querySelector(".wa-body");
+                if (body) body.scrollTop = body.scrollHeight;
+              }
+            });
+          });
           /* The agent menu, and the agents in it. Triggering one writes the
              exchange, then runs the case's own transition — so what the
              assistant says it did and what the audit trail records are the same
@@ -6269,8 +6541,12 @@
             button.addEventListener("click", function () {
               var action = button.getAttribute("data-assistant-action");
               if (action === "toggle-agents") return;
-              if (action === "risk-tab") {
-                viewState.activeTab = "risk";
+              /* "risk-tab", "conversation-tab" and any other `<tab>-tab`
+                 action just switch to that real workspace tab — one rule
+                 rather than one more `if` per tab a link is ever added for. */
+              var tabMatch = /^(.+)-tab$/.exec(action || "");
+              if (tabMatch && WORKSPACE_TABS.indexOf(tabMatch[1]) !== -1) {
+                viewState.activeTab = tabMatch[1];
                 panelScroll = 0;
                 syncHash();
                 render();
@@ -6597,6 +6873,8 @@
         renderNavigation: renderNavigation,
         renderToolbar: renderToolbar,
         renderLoanCard: renderLoanCard,
+        renderDriveLink: renderDriveLink,
+        renderLoanCardEntry: renderLoanCardEntry,
         renderBoardColumns: renderBoardColumns,
         renderPortfolioPage: renderPortfolioPage,
 

@@ -72,6 +72,7 @@ function throwingStorage(seed) {
 
 const CASE_KEY = "bfDemoCase:H-2026-08415";
 const BRIDGE_KEY = "bfDemoMessages:H-2026-08415";
+const VIEW_KEY = "bfDemoBorrowerView:H-2026-08415";
 
 /* Each page keeps its own memory of which bridge messages it has already taken
    in, so every test starts from a clean slate on both sides. */
@@ -87,6 +88,15 @@ const openOf = (api, state, type) =>
     .filter(item => !type || item.type === type);
 
 const stamp = minute => `2026-08-06T12:${String(minute).padStart(2, "0")}:00.000Z`;
+
+/* Writes straight into the envelope, bypassing both pages' own `bridgeSend` —
+   which marks whatever it just sent as already seen by the sender's own
+   module (§7: "mine is already on my own surface"). That is right for a real
+   send and wrong for a test standing in for the *other* side's tab, which
+   must still see this as fresh. */
+function seedBridge(storage, entries) {
+  storage.setItem(BRIDGE_KEY, JSON.stringify({ version: 1, run: 1, entries }));
+}
 
 /* ==================================================================== keys */
 
@@ -201,6 +211,229 @@ test("a storage whose getItem throws is read as empty, not as a crash", () => {
   assert.equal(loaded.source, "fallback");
   assert.equal(loaded.reason, "unreadable");
   assert.deepEqual(plain(loaded.state), plain(lender.FALLBACK_CASE.state));
+});
+
+/* ==================================================== her place on the page */
+
+test("her place on the page survives a reload: same phase, same thread, same progress", () => {
+  const storage = memoryStorage();
+  const finished = borrower.runScript();
+  assert.equal(finished.finished, true, "the fixture is supposed to have completed");
+
+  assert.equal(borrower.saveView(storage, finished), true);
+  const reloaded = borrower.loadView(storage);
+
+  assert.equal(reloaded.resumed, true);
+  assert.equal(reloaded.view.phase, finished.phase);
+  assert.equal(reloaded.view.cursor, finished.cursor);
+  assert.equal(reloaded.view.finished, true);
+  assert.equal(reloaded.view.started, finished.started);
+  assert.deepEqual(plain(reloaded.view.thread), plain(finished.thread));
+  assert.deepEqual(plain(reloaded.view.state), plain(finished.state));
+});
+
+test("a reload never resumes autoplay on its own, even if she left mid-play", () => {
+  const storage = memoryStorage();
+  /* `runScript` is the pure engine fast-forwarding through every step; it
+     never flips the UI's own "she pressed play" flag, so that is set by
+     hand here to stand in for a run that really was mid-flight. */
+  const midPlay = Object.assign({}, borrower.setPaused(borrower.runScript(), false), {
+    started: true
+  });
+  assert.equal(midPlay.paused, false);
+
+  borrower.saveView(storage, midPlay);
+  const reloaded = borrower.loadView(storage);
+  /* Everything else about where she was is kept; only the clock stops, so
+     the page does not race ahead of a screen nobody has looked at yet. */
+  assert.equal(reloaded.view.paused, true);
+  assert.equal(reloaded.view.started, true);
+  assert.equal(reloaded.view.cursor, midPlay.cursor);
+});
+
+test("empty view storage is the same as never having visited: the opening view, not resumed", () => {
+  const loaded = borrower.loadView(memoryStorage());
+  assert.equal(loaded.resumed, false);
+  assert.deepEqual(plain(loaded.view), plain(borrower.initialViewState()));
+  assert.deepEqual(plain(loaded.bridgeSeen), {});
+  assert.equal(loaded.bridgeRun, 0);
+});
+
+test("malformed, wrongly shaped or future-version view storage all reset to the opening view, not resumed", () => {
+  const cases = [
+    "{not json at all",
+    "",
+    "null",
+    "7",
+    '"a string"',
+    "[]",
+    '{"hello":"world"}',
+    '{"phase":"documents"}',
+    '{"version":2,"phase":"documents"}',
+    '{"version":0,"phase":"documents"}',
+    '{"version":"1","phase":"documents"}'
+  ];
+  for (const payload of cases) {
+    const storage = memoryStorage({ [VIEW_KEY]: payload });
+    const loaded = borrower.loadView(storage);
+    assert.equal(loaded.resumed, false, payload);
+    assert.deepEqual(plain(loaded.view), plain(borrower.initialViewState()), payload);
+  }
+});
+
+test("one corrupted field in an otherwise-valid saved view does not sink the rest", () => {
+  const storage = memoryStorage({
+    [VIEW_KEY]: JSON.stringify({
+      version: borrower.BORROWER_VIEW_VERSION,
+      phase: "not-a-real-phase",
+      cursor: -5,
+      speed: 999,
+      drawerTab: "not-a-real-tab",
+      thread: "not-an-array",
+      started: true,
+      finished: true
+    })
+  });
+  const loaded = borrower.loadView(storage);
+  const opening = borrower.initialViewState();
+  assert.equal(loaded.resumed, true, "the payload is otherwise a real, valid save");
+  /* Each bad field falls back to its own default... */
+  assert.equal(loaded.view.phase, opening.phase);
+  assert.equal(loaded.view.cursor, opening.cursor);
+  assert.equal(loaded.view.speed, opening.speed);
+  assert.equal(loaded.view.drawerTab, opening.drawerTab);
+  assert.deepEqual(plain(loaded.view.thread), plain(opening.thread));
+  /* ...without erasing the fields that were actually fine. */
+  assert.equal(loaded.view.started, true);
+  assert.equal(loaded.view.finished, true);
+});
+
+test("restart clears her saved place on the page, not just the bridge", () => {
+  const storage = memoryStorage();
+  borrower.saveView(storage, borrower.setPaused(borrower.runScript(), false));
+  assert.notEqual(storage.raw(VIEW_KEY), null);
+
+  borrower.restart({ storage: storage });
+  assert.equal(storage.raw(VIEW_KEY), null);
+  assert.equal(borrower.loadView(storage).resumed, false);
+  assert.deepEqual(plain(borrower.loadView(storage).view), plain(borrower.initialViewState()));
+});
+
+/* ============================== a reply sent while her tab was closed */
+
+test("a reply sent while her tab was closed is on the bridge, unabsorbed, when she reopens it", () => {
+  freshBridges();
+  const storage = memoryStorage();
+  const bridge = memoryStorage();
+
+  /* She played the demo, then closed the tab — her place is saved. */
+  const played = borrower.runScript();
+  borrower.saveView(storage, played);
+
+  /* A fresh page load starts with no memory of the bridge at all — this is
+     what a real reload does before init() runs; a test that skipped it would
+     be trading on memory the page load itself does not have. */
+  freshBridges();
+  seedBridge(bridge, [
+    {
+      id: "borrower-1-1",
+      run: 1,
+      seq: 1,
+      from: "borrower",
+      text: "Any news on the title?",
+      timestamp: stamp(10),
+      documentId: "title-certificate"
+    }
+  ]);
+
+  /* The desk replies while nothing of hers is running to hear it. */
+  const absorbed = lender.bridgeAbsorb(lender.FALLBACK_CASE.state, { storage: bridge });
+  const item = openOf(lender, absorbed.state, "borrower-message")[0];
+  lender.commitReply(absorbed.state, item.id, "Still there? Following up on the title.", {
+    timestamp: stamp(30),
+    storage: bridge
+  });
+
+  /* Reopening the tab must not throw the pending reply away the way a fresh
+     run's bridge always was (§ her place on the page) — this is the actual
+     bug: init() used to call bridgeClear() unconditionally on every load. */
+  const loaded = borrower.loadView(storage);
+  assert.equal(loaded.resumed, true);
+  borrower.applyBridgeMemory(loaded);
+  const received = borrower.bridgeAbsorb(loaded.view, { storage: bridge });
+  assert.equal(received.changed, true, "the reply sent while she was away was lost");
+  const thread = plain(received.viewState).thread;
+  assert.equal(thread[thread.length - 1].text, "Still there? Following up on the title.");
+});
+
+test("resuming never re-absorbs a reply already folded into the saved state", () => {
+  freshBridges();
+  const storage = memoryStorage();
+  const bridge = memoryStorage();
+
+  seedBridge(bridge, [
+    {
+      id: "borrower-1-1",
+      run: 1,
+      seq: 1,
+      from: "borrower",
+      text: "About the tax folder?",
+      timestamp: stamp(10),
+      documentId: "tax-folder"
+    }
+  ]);
+  const absorbed = lender.bridgeAbsorb(lender.FALLBACK_CASE.state, { storage: bridge });
+  const item = openOf(lender, absorbed.state, "borrower-message")[0];
+  lender.commitReply(absorbed.state, item.id, "One reply, told once.", {
+    timestamp: stamp(30),
+    storage: bridge
+  });
+
+  /* She is on the page when it arrives — absorbed once, saved as it stands,
+     bridge memory saved right alongside it. */
+  const live = borrower.bridgeAbsorb(borrower.runScript(), { storage: bridge });
+  assert.equal(live.changed, true);
+  borrower.saveView(storage, live.viewState);
+
+  /* The tab closes and reopens: a real reload's module memory starts from
+     nothing, restored only from what was saved — not from whatever this
+     process happens to still remember from the call above. */
+  freshBridges();
+  const loaded = borrower.loadView(storage);
+  borrower.applyBridgeMemory(loaded);
+  const again = borrower.bridgeAbsorb(loaded.view, { storage: bridge });
+  assert.equal(again.changed, false, "a reload must not re-absorb what it already saved");
+  const count = plain(loaded.view).thread.filter(m => m.text === "One reply, told once.").length;
+  assert.equal(count, 1);
+});
+
+test("a genuinely fresh visit still clears a previous demo run's leftover bridge", () => {
+  freshBridges();
+  const bridge = memoryStorage({
+    [BRIDGE_KEY]: JSON.stringify({
+      run: 1,
+      entries: [
+        {
+          id: "lender-1-1",
+          run: 1,
+          seq: 1,
+          from: "lender",
+          text: "Old run's leftover",
+          timestamp: stamp(1),
+          documentId: "tax-folder"
+        }
+      ]
+    })
+  });
+  /* No saved view at all: never visited, or restarted since — this is what
+     init() checks to choose clearing over absorbing. */
+  const loaded = borrower.loadView(memoryStorage());
+  assert.equal(loaded.resumed, false);
+  borrower.bridgeClear(bridge);
+  assert.deepEqual(plain(borrower.bridgeRead(bridge).entries), []);
+  /* And a page that loads afterwards has nothing left to absorb. */
+  const result = borrower.bridgeAbsorb(borrower.initialViewState(), { storage: bridge });
+  assert.equal(result.changed, false);
 });
 
 /* ================================================= lender.html stands alone */
@@ -794,14 +1027,29 @@ test("restart survives a storage that throws", () => {
 
 /* ========================================================= the role switches */
 
-test("the borrower's topbar links to the lender's board, not into the case", () => {
+test("the borrower's topbar links straight into her case on the lender's desk", () => {
   const markup = borrower.renderTopbar(borrower.initialViewState());
-  assert.ok(markup.includes('href="lender.html"'));
-  /* The desk arrives at its pipeline; opening a case is a deliberate click. */
-  assert.ok(!markup.includes("lender.html?case="));
+  /* Named in the query, so the desk opens on this case's overview rather than
+     the bare board — the same case whichever tab last had it open. */
+  assert.ok(markup.includes('href="lender.html?case=' + borrower.CASE_ID + '"'));
   assert.ok(markup.includes(borrower.escapeHtml(t("borrower.switch-to-lender"))));
   assert.match(markup, /<a[^>]*class="demo-role-switch"/);
   assert.ok(markup.includes('aria-label="' + borrower.escapeHtml(t("borrower.switch-to-lender-aria")) + '"'));
+});
+
+test("the borrower's link round-trips: the lender opens exactly the case it names, quietly", () => {
+  const markup = borrower.renderTopbar(borrower.initialViewState());
+  const href = markup.match(/href="lender\.html\?case=([^"]+)"/)[1];
+  const known = new Set(plain(lender.buildPortfolio(lender.FALLBACK_CASE, null)).map(loan => loan.caseId));
+  const opened = lender.applyCaseQuery(lender.DEFAULT_VIEW_STATE, "?case=" + href, known);
+  assert.equal(plain(opened.viewState).selectedCaseId, borrower.CASE_ID);
+  assert.equal(plain(opened.viewState).activeTab, "overview");
+  /* Quiet every time: repeating "now assigned to you" on every back-and-forth
+     during a demo would be wrong the second time it was said. */
+  assert.deepEqual(plain(opened.announcement), {
+    key: "lender.status.case-opened",
+    params: { case: borrower.CASE_ID }
+  });
 });
 
 test("the lender's topbar links back to the borrower view", () => {

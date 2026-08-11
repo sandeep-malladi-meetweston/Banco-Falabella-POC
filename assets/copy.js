@@ -160,6 +160,7 @@
       "lender.title": "Lender portal",
       "lender.page-title": "Banco Falabella · Lender portal",
       "lender.logo-alt": "Banco Falabella",
+      "lender.logo-reset-aria": "Clear all filters and show every case",
       "lender.search-label": "Search case, borrower or address",
       "lender.search-placeholder": "Search case, borrower or address",
       /* Chilean mortgages are written in UF and paid in pesos. Which one is
@@ -221,6 +222,8 @@
       "lender.card.pending-inspection": "Inspection pending",
       "lender.card.pending-both": "Title + inspection pending",
       "lender.card.pending-aria": "Flagged: {what}.",
+      "lender.card.drive": "Case files",
+      "lender.card.drive-aria": "Open case {case} files in Google Drive, in a new tab",
 
       "lender.substatus.documents-progress": "{received} of {total} documents",
       "lender.substatus.submitted-today": "Submitted today",
@@ -410,13 +413,23 @@
       "lender.documents.handoff-none": "Nothing is outstanding on this document.",
 
       /* ------------------------------------------------ writing to the borrower
-         The WhatsApp thread itself is hers, and lives only on her surface. What
-         is left here is what the desk *sends* — from the review item it answers,
-         or from the message box on the overview — and the words that refuse a
-         send that cannot go. */
+         The words that refuse a send that cannot go, wherever it was sent from
+         — the review item it answers, the message box on the overview, or the
+         conversation tab's own composer. */
       "lender.conversation.sent": "Message sent to Javiera.",
       "lender.conversation.blank": "Type a message before sending.",
       "lender.conversation.readonly": "This case is a read-only sample and cannot be messaged.",
+      /* The conversation tab: her WhatsApp thread, read from the desk, in the
+         one order she read it in. */
+      "lender.conversation.heading": "Message thread",
+      "lender.conversation.subtitle": "The same thread she sees on her phone",
+      "lender.conversation.aria-label": "Conversation with {borrower}",
+      "lender.conversation.today": "TODAY",
+      "lender.conversation.empty": "No messages yet.",
+      "lender.conversation.placeholder": "Message {borrower}…",
+      "lender.conversation.send": "Send",
+      "lender.conversation.pending": "Awaiting your reply",
+      "lender.conversation.pending-link": "{count} awaiting your reply",
       /* The handoff exchange, already on the case when it reaches the desk. */
       "lender.conversation.seed-routed":
         "Your title certificate shows a mortgage from another bank registered on the property. I have routed it to a mortgage specialist with the document and the registration details.",
@@ -1431,6 +1444,7 @@
       "lender.title": "Portal del ejecutivo",
       "lender.page-title": "Banco Falabella · Portal del ejecutivo",
       "lender.logo-alt": "Banco Falabella",
+      "lender.logo-reset-aria": "Quitar todos los filtros y mostrar todos los casos",
       "lender.search-label": "Buscar caso, solicitante o dirección",
       "lender.search-placeholder": "Buscar caso, solicitante o dirección",
       "lender.language.aria-label": "Idioma",
@@ -1487,6 +1501,8 @@
       "lender.card.pending-inspection": "Inspección pendiente",
       "lender.card.pending-both": "Título + inspección pendientes",
       "lender.card.pending-aria": "Marcado: {what}.",
+      "lender.card.drive": "Archivos del caso",
+      "lender.card.drive-aria": "Abrir los archivos del caso {case} en Google Drive, en una pestaña nueva",
 
       "lender.substatus.documents-progress": "{received} de {total} documentos",
       "lender.substatus.submitted-today": "Ingresada hoy",
@@ -1649,6 +1665,15 @@
       "lender.conversation.blank": "Escribe un mensaje antes de enviarlo.",
       "lender.conversation.readonly":
         "Este caso es una muestra de solo lectura y no admite mensajes.",
+      "lender.conversation.heading": "Hilo de mensajes",
+      "lender.conversation.subtitle": "El mismo hilo que ella ve en su teléfono",
+      "lender.conversation.aria-label": "Conversación con {borrower}",
+      "lender.conversation.today": "HOY",
+      "lender.conversation.empty": "Todavía no hay mensajes.",
+      "lender.conversation.placeholder": "Escribe a {borrower}…",
+      "lender.conversation.send": "Enviar",
+      "lender.conversation.pending": "Esperando tu respuesta",
+      "lender.conversation.pending-link": "{count} esperando tu respuesta",
       "lender.conversation.seed-routed":
         "Tu certificado de dominio vigente muestra una hipoteca de otro banco inscrita sobre la propiedad. La derivé a un especialista hipotecario con el documento y los datos de inscripción.",
       "lender.conversation.seed-reply": "Ok, quedo atenta. 🙏",

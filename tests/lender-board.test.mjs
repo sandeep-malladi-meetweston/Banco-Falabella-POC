@@ -153,6 +153,31 @@ test("a loan with no deed date renders no deed line", () => {
   assert.equal(markup.includes("Closing "), false);
 });
 
+test("a live case's card entry links to its Google Drive folder in a new tab", () => {
+  const javiera = findLoan("H-2026-08415");
+  const ignacio = findLoan("H-2026-08377");
+  assert.equal(javiera.driveUrl, "https://drive.google.com/drive/folders/1eFFTCGNeIAmL_9II0XLSEyhwF00DEqp_");
+  assert.equal(ignacio.driveUrl, "https://drive.google.com/drive/folders/1vERlY5gxpbj1_WLEWEKb8mBIM4h2N5Iq");
+
+  const entry = lender.renderLoanCardEntry(javiera);
+  assert.match(entry, /^<div class="loan-card-shell">/);
+  /* The card itself is untouched — the link is a sibling, not nested inside
+     the button, so it stays its own keyboard-reachable control. */
+  assert.equal(entry.includes(lender.renderLoanCard(javiera)), true);
+  assert.match(
+    entry,
+    /<a class="drive-link" href="https:\/\/drive\.google\.com\/drive\/folders\/1eFFTCGNeIAmL_9II0XLSEyhwF00DEqp_" target="_blank" rel="noopener noreferrer"/
+  );
+  assert.ok(entry.includes(t("lender.card.drive-aria", { case: "H-2026-08415" })));
+  assert.ok(entry.includes(t("lender.card.drive")));
+
+  /* A read-only fixture has no folder, so renderLoanCardEntry falls back to
+     the bare card exactly as renderLoanCard produces it. */
+  const fixture = findLoan("H-2026-08402");
+  assert.equal(fixture.driveUrl, undefined);
+  assert.equal(lender.renderLoanCardEntry(fixture), lender.renderLoanCard(fixture));
+});
+
 test("a borrower name that looks like markup is escaped, not injected", () => {
   const loan = findLoan("H-2026-08360");
   loan.borrowerName = "<script>alert(1)</script>";
@@ -191,6 +216,21 @@ test("all six columns render with a heading and a count, and empty ones keep a p
   assert.equal(narrow.match(/class="stage-column"/g).length, 6);
   assert.equal(narrow.match(/class="empty-column"/g).length, 5);
   assert.ok(narrow.includes(t("lender.board.empty-column")));
+});
+
+test("the logo is a button that clears every filter, not a bare image", () => {
+  const loans = lender.buildPortfolio();
+  const filtered = viewState({
+    view: "credit-review",
+    stage: "credit-review",
+    reviewType: "document-exception",
+    query: "camila"
+  });
+  const markup = lender.renderPortfolioPage(loans, filtered, NOW);
+  assert.match(markup, /<button type="button" class="topbar-logo-button" id="reset-filters"/);
+  assert.ok(markup.includes(t("lender.logo-reset-aria")));
+  /* The button wraps the same logo image, rather than replacing it. */
+  assert.match(markup, /id="reset-filters"[^>]*><img class="topbar-logo"/);
 });
 
 /* ========================================================== the whole page */

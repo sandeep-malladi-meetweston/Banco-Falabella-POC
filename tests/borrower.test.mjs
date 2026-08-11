@@ -616,6 +616,19 @@ test("the phase rail carries the three phases and marks where she is", () => {
   assert.match(markup, /<button/);
 });
 
+test("the open-items status pill is a real button that opens the same tray as the bell", () => {
+  const view = finished();
+  const markup = borrower.renderPhaseRail(view);
+  assert.match(markup, /<button type="button" class="status-pill" data-notifications="toggle"/);
+  assert.ok(markup.includes(shown("borrower.portal.status-open", { count: 2 })));
+  assert.match(markup, /class="status-pill"[^>]*aria-expanded="false"[^>]*aria-controls="notification-panel"/);
+
+  const opened = borrower.toggleNotifications(view);
+  assert.equal(opened.notificationsOpen, true);
+  const openMarkup = borrower.renderPhaseRail(opened);
+  assert.match(openMarkup, /class="status-pill"[^>]*aria-expanded="true"/);
+});
+
 test("the demo controls play, pause, change speed, restart and switch language", () => {
   const paused = borrower.setPaused(finished(), true);
   const markup = borrower.renderDemoControls(paused);
@@ -733,6 +746,7 @@ test("there is exactly one setTimeout on the page, inside the default scheduler"
 test("restart returns to the opening state and clears the message bridge", () => {
   const storage = new Map([
     [borrower.MESSAGE_BRIDGE_KEY, JSON.stringify([{ id: "message-1", text: "hello" }])],
+    [borrower.VIEW_STORAGE_KEY, JSON.stringify({ version: borrower.BORROWER_VIEW_VERSION, phase: "documents" })],
     ["unrelated", "keep me"]
   ]);
   const store = {
@@ -752,6 +766,9 @@ test("restart returns to the opening state and clears the message bridge", () =>
      the first message of the next run from colliding with a remembered id. What
      matters, and what this asserts, is that the thread reads back empty. */
   assert.deepEqual(plain(borrower.bridgeRead(store).entries), []);
+  /* Her saved place on the page is a plain key, so restart really can delete
+     it — the next load has nothing to resume into but the opening state. */
+  assert.equal(store.getItem(borrower.VIEW_STORAGE_KEY), null);
   assert.equal(store.getItem("unrelated"), "keep me", "and nothing else was touched");
 });
 
