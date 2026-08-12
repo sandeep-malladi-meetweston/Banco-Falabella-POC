@@ -89,6 +89,15 @@
     @keyframes tray-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
     .notification-head{padding:10px 12px 8px}
     .notification-head h2{margin:0;font:600 13px var(--display)}
+    /* The split, under the title: the same monospace the group headings use, so
+       the line reads as a summary of them rather than a sentence of its own. */
+    .notification-summary{margin:4px 0 0;color:var(--slate);font:600 10.5px var(--mono);letter-spacing:.02em;overflow-wrap:anywhere}
+    /* Two kinds of notification, drawn as two lists rather than one mixed one:
+       a document is answered by sending a file, a message by writing back, and
+       a tray that mixes them makes her work out which is which. */
+    .notification-group+.notification-group{margin-top:8px;border-top:1px solid var(--rule)}
+    .notification-group-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0;padding:9px 12px 4px;color:var(--muted);font:600 10px var(--mono);text-transform:uppercase;letter-spacing:.07em}
+    .notification-group-count{min-width:18px;padding:0 5px;border-radius:999px;background:var(--brand-wash);color:var(--brand-deep);font:700 10px var(--mono);line-height:16px;text-align:center}
     .notification-list{list-style:none;margin:0;padding:0}
     .notification-list>li{padding:11px 12px;border-top:1px solid #eef1f3}
     .notification-list>li[data-tone="attention"]{border-left:3px solid var(--brand-lime);border-radius:0 8px 8px 0;background:var(--brand-wash)}
@@ -1264,9 +1273,18 @@
         var changes = { cursor: viewState.cursor + 1 };
         if (step.documentId) changes.currentDocumentId = step.documentId;
 
+        /* Every bubble carries the beat it was said on. The thread does not print
+           it — a WhatsApp thread is read as one conversation, not as a log — but
+           the tray does, so a message notification can be stamped with the same
+           narrative clock the document ones are (§notificationsFor). */
         if (step.kind === "assistant") {
           changes.thread = viewState.thread.concat([
-            { author: "assistant", key: step.key, params: paramsFor(step.paramsId, viewState) }
+            {
+              author: "assistant",
+              key: step.key,
+              params: paramsFor(step.paramsId, viewState),
+              at: timestamp
+            }
           ]);
           return fork(viewState, changes);
         }
@@ -1275,7 +1293,8 @@
           var outgoing = {
             author: "borrower",
             key: step.key || null,
-            params: paramsFor(step.paramsId, viewState)
+            params: paramsFor(step.paramsId, viewState),
+            at: timestamp
           };
           if (step.fileKey) {
             outgoing.attachment = { fileKey: step.fileKey, metaKey: step.metaKey || null };
@@ -1923,8 +1942,12 @@
             state = workspace.settleConditionsFor(state, entry.documentId, stamp);
           }
         });
-        var arriving = fresh.map(function (entry) {
-          return { author: "assistant", text: entry.text };
+        var arriving = fresh.map(function (entry, index) {
+          return {
+            author: "assistant",
+            text: entry.text,
+            at: new Date(received + index * 1000).toISOString()
+          };
         });
         return {
           changed: true,
@@ -2030,7 +2053,7 @@
         }
         return fork(viewState, {
           state: state,
-          thread: viewState.thread.concat([{ author: "assistant", key: key }])
+          thread: viewState.thread.concat([{ author: "assistant", key: key, at: timestamp }])
         });
       }
 
@@ -2058,7 +2081,7 @@
         }
         var sent = fork(viewState, {
           state: state,
-          thread: viewState.thread.concat([{ author: "borrower", text: body }])
+          thread: viewState.thread.concat([{ author: "borrower", text: body, at: timestamp }])
         });
 
         /* The assistant answers a beat later, on its own. Scheduled through the
@@ -2085,11 +2108,23 @@
 
       /**
        * Her half of the loan assistant on a document's own review page: filed
-       * against that one document, not the WhatsApp thread on the documents
-       * page, so it raises the same review item on the desk that a message
-       * from the main thread would. No scripted reply follows it — the desk's
-       * answer is a real one, written back through `commitReply` or the
-       * conversation box on the case, and it arrives here over the bridge.
+       * against that one document, so it raises the same review item on the
+       * desk that a message from the main thread would. No scripted reply
+       * follows it — the desk's answer is a real one, written back through
+       * `commitReply` or the conversation box on the case, and it arrives here
+       * over the bridge.
+       *
+       * It lands on her own thread as well as on the document. This used to
+       * file the state and stop there, on the reasoning that a message about
+       * one document belonged to that document rather than to the thread
+       * everyone sees regardless. What that produced was a message she could
+       * not find: she wrote it from a document's review page, the desk read it
+       * and replied to it, and the one screen she actually reads — the thread
+       * on the documents page — had no record she had ever said anything. Her
+       * half of a conversation cannot be invisible to her, so the same
+       * `{ author, text }` entry `sendBorrowerMessage` appends goes on here
+       * too, and the desk's reply arrives back into the same thread over the
+       * bridge (§bridgeAbsorb).
        */
       function sendDrawerMessage(viewState, documentId, raw, options) {
         var body = String(raw === null || raw === undefined ? "" : raw).trim();
@@ -2114,7 +2149,10 @@
         }
         return {
           changed: true,
-          viewState: fork(viewState, { state: state }),
+          viewState: fork(viewState, {
+            state: state,
+            thread: viewState.thread.concat([{ author: "borrower", text: body, at: timestamp }])
+          }),
           bridged: bridged,
           announcement: { key: "borrower.chat.sent" }
         };
@@ -2184,6 +2222,19 @@
           drawerTab: "document",
           notificationsOpen: false
         });
+      }
+
+      /* The other door out of the tray. A message is answered in the thread, and
+         the thread is on the documents phase, so this closes the tray, closes the
+         review drawer over it, and turns the page if she was reading another one.
+         Staying put is not a page change, exactly as `goToPhase` has it. */
+      function openChat(viewState) {
+        var changes = { notificationsOpen: false, openDocumentId: null, drawerTab: "review" };
+        if (viewState.phase !== "documents") {
+          changes.phase = "documents";
+          changes.scrollTop = true;
+        }
+        return fork(viewState, changes);
       }
 
       function setDrawerTab(viewState, tab) {
@@ -2463,7 +2514,11 @@
         bell:
           '<path d="M18 15.5V11a6 6 0 1 0-12 0v4.5L4.5 18h15z"/><path d="M10 20.5a2.2 2.2 0 0 0 4 0"/>',
         eye:
-          '<path d="M2.5 12S6.5 5.5 12 5.5 21.5 12 21.5 12 17.5 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>'
+          '<path d="M2.5 12S6.5 5.5 12 5.5 21.5 12 21.5 12 17.5 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',
+        /* The message notification's own symbol: the tray says which kind an
+           item is with a shape as well as a heading. */
+        chat:
+          '<path d="M20.5 12c0 3.8-3.8 6.9-8.5 6.9a10 10 0 0 1-2.6-.34L4.6 20.5l1.3-3.4A6.4 6.4 0 0 1 3.5 12c0-3.8 3.8-6.9 8.5-6.9s8.5 3.1 8.5 6.9z"/>'
       };
 
       function icon(name, options) {
@@ -3149,7 +3204,15 @@
        * on. They are derived from the case rather than accumulated: a
        * notification is a fact about the state, not a message queue, which is why
        * nothing has to be pushed anywhere for one to appear.
+       *
+       * Each one says which kind it is, because the two kinds are answered in
+       * two different places: a `document` is answered by sending a file, and a
+       * `chat` item is answered by writing back in the thread. The tray draws
+       * them as two lists (§renderNotifications) rather than making her work out
+       * which of a mixed list is which.
        */
+      var NOTIFICATION_KINDS = ["document", "chat"];
+
       function notificationsFor(viewState) {
         var notifications = [];
         if (!viewState) return notifications;
@@ -3158,6 +3221,7 @@
         if (viewState.escalated) {
           notifications.push({
             id: "escalated",
+            kind: "document",
             documentId: "title-certificate",
             titleKey: "borrower.notice.escalated-title",
             bodyKey: "borrower.notice.escalated-body",
@@ -3173,6 +3237,7 @@
           if (!record || record.verdict !== "rejected") return;
           notifications.push({
             id: "rejected-" + documentId,
+            kind: "document",
             documentId: documentId,
             titleKey: "borrower.banner.incomplete.title",
             bodyKey: "borrower.banner.incomplete.body",
@@ -3181,7 +3246,36 @@
           });
         });
 
+        var waiting = unansweredMessage(viewState);
+        if (waiting) notifications.push(waiting);
+
         return notifications;
+      }
+
+      /**
+       * The one message notification, or nothing. The fact it is derived from is
+       * the plainest one the thread carries: the last word in her conversation is
+       * not hers, so it is her turn. That covers the assistant asking for
+       * something and a reply arriving from the desk over the bridge without
+       * either having to raise anything, and it clears itself the moment she
+       * answers — which is the whole reason it is derived rather than queued.
+       *
+       * The id moves with the thread, so a message landing after she has read the
+       * tray is a new unread line rather than one she has already dismissed.
+       */
+      function unansweredMessage(viewState) {
+        var thread = (viewState && viewState.thread) || [];
+        var last = thread[thread.length - 1];
+        if (!last || last.author === "borrower") return null;
+        return {
+          id: "chat-" + thread.length,
+          kind: "chat",
+          documentId: null,
+          titleKey: "borrower.notifications.chat-title",
+          bodyKey: "borrower.notifications.chat-body",
+          tone: "attention",
+          at: last.at || null
+        };
       }
 
       /* When the case last said something about a document. */
@@ -3211,6 +3305,60 @@
         });
       }
 
+      var NOTIFICATION_GROUP_KEYS = {
+        document: "borrower.notifications.group-documents",
+        chat: "borrower.notifications.group-chat"
+      };
+
+      /* How many of each kind. Derived from the same `notificationsFor` the two
+         lists are drawn from, so the line that counts them and the lists that
+         show them can never disagree. */
+      function notificationCounts(viewState) {
+        var counts = {};
+        NOTIFICATION_KINDS.forEach(function (kind) {
+          counts[kind] = 0;
+        });
+        notificationsFor(viewState).forEach(function (notification) {
+          if (counts[notification.kind] === undefined) return;
+          counts[notification.kind] += 1;
+        });
+        return counts;
+      }
+
+      /**
+       * "2 document notifications · 1 chat notification" — the split said in
+       * words, once, above the two lists that then show it.
+       *
+       * The tray already separated the kinds into their own headed lists, but
+       * the only place that put a number on the whole tray was the bell, and
+       * the bell says a single total: "3" over a document exception, a rejected
+       * upload and a message she has not answered names none of the three. The
+       * kinds are answered in two different places — a document by sending a
+       * file, a message by writing back — so how much of each is waiting is the
+       * useful fact, and one number was hiding it.
+       *
+       * A kind with nothing in it is left out rather than reported as zero: an
+       * empty list is not news, and "0 chat notifications" is a sentence about
+       * nothing.
+       */
+      function notificationSummary(viewState) {
+        var counts = notificationCounts(viewState);
+        var parts = [];
+        NOTIFICATION_KINDS.forEach(function (kind) {
+          var count = counts[kind];
+          if (!count) return;
+          parts.push(
+            t(
+              count === 1
+                ? "borrower.notifications.count-" + kind + "-one"
+                : "borrower.notifications.count-" + kind + "-many",
+              { count: count }
+            )
+          );
+        });
+        return parts.join(t("borrower.notifications.summary-separator"));
+      }
+
       function renderNotifications(viewState) {
         if (!viewState.notificationsOpen) return "";
         var notifications = notificationsFor(viewState);
@@ -3218,43 +3366,90 @@
           '<div class="notification-panel" id="notification-panel" role="region" aria-labelledby="notification-title">' +
           '<div class="notification-head"><h2 id="notification-title">' +
           text("borrower.notifications.title") +
-          "</h2></div>" +
+          "</h2>" +
+          /* Only when there is something to split; the empty line below already
+             speaks for a tray with nothing in it. */
           (notifications.length
-            ? '<ul class="notification-list">' +
-              notifications
-                .slice()
-                .reverse()
-                .map(function (notification) {
-                  var at = notification.at ? clockTime(notification.at) : "";
-                  var documentName = t("doc." + notification.documentId + ".name");
-                  return (
-                    '<li data-tone="' +
-                    escapeHtml(notification.tone) +
-                    '"><div class="notification-row"><strong>' +
-                    text(notification.titleKey) +
-                    "</strong>" +
-                    '<span class="notification-meta">' +
-                    (at ? '<span class="notification-time">' + escapeHtml(at) + "</span>" : "") +
-                    '<button type="button" class="notification-preview" data-preview-document="' +
-                    escapeHtml(notification.documentId) +
-                    '" aria-label="' +
-                    text("borrower.notifications.preview-aria", { document: documentName }) +
-                    '">' +
-                    icon("eye") +
-                    "</button></span></div>" +
-                    /* Which document it is about, said before what it says: a
-                       notice about "one field" is useless without the file. */
-                    '<span class="notification-doc">' +
-                    escapeHtml(documentName) +
-                    "</span><p>" +
-                    text(notification.bodyKey) +
-                    "</p></li>"
-                  );
-                })
-                .join("") +
-              "</ul>"
+            ? '<p class="notification-summary">' +
+              escapeHtml(notificationSummary(viewState)) +
+              "</p>"
+            : "") +
+          "</div>" +
+          (notifications.length
+            ? NOTIFICATION_KINDS.map(function (kind) {
+                return renderNotificationGroup(
+                  kind,
+                  notifications.filter(function (notification) {
+                    return notification.kind === kind;
+                  })
+                );
+              }).join("")
             : '<p class="notification-empty">' + text("borrower.notifications.empty") + "</p>") +
           "</div>"
+        );
+      }
+
+      /* One kind, with its own heading and its own count — a group with nothing
+         in it is not drawn, so the tray never claims a list it cannot show.
+         Newest first inside the group, which is how the single list read. */
+      function renderNotificationGroup(kind, items) {
+        if (!items.length) return "";
+        var headingId = "notification-group-" + kind;
+        return (
+          '<section class="notification-group" data-notification-kind="' +
+          escapeHtml(kind) +
+          '" aria-labelledby="' +
+          headingId +
+          '"><h3 class="notification-group-head" id="' +
+          headingId +
+          '"><span>' +
+          text(NOTIFICATION_GROUP_KEYS[kind]) +
+          '</span><span class="notification-group-count">' +
+          items.length +
+          "</span></h3>" +
+          '<ul class="notification-list">' +
+          items.slice().reverse().map(renderNotificationItem).join("") +
+          "</ul></section>"
+        );
+      }
+
+      /**
+       * One line in the tray. The symbol on the right is the door the item is
+       * answered through: the eye opens the document's own page, and the bubble
+       * opens the conversation she would write the answer in.
+       */
+      function renderNotificationItem(notification) {
+        var at = notification.at ? clockTime(notification.at) : "";
+        var chat = notification.kind === "chat";
+        var documentName = chat ? "" : t("doc." + notification.documentId + ".name");
+        return (
+          '<li data-tone="' +
+          escapeHtml(notification.tone) +
+          '"><div class="notification-row"><strong>' +
+          text(notification.titleKey) +
+          "</strong>" +
+          '<span class="notification-meta">' +
+          (at ? '<span class="notification-time">' + escapeHtml(at) + "</span>" : "") +
+          '<button type="button" class="notification-preview" ' +
+          (chat
+            ? 'data-notification-chat="open" aria-label="' +
+              text("borrower.notifications.chat-aria")
+            : 'data-preview-document="' +
+              escapeHtml(notification.documentId) +
+              '" aria-label="' +
+              text("borrower.notifications.preview-aria", { document: documentName })) +
+          '">' +
+          icon(chat ? "chat" : "eye") +
+          "</button></span></div>" +
+          /* Which document it is about, said before what it says: a notice about
+             "one field" is useless without the file. A message is about the
+             conversation, which the heading above it already named. */
+          (chat
+            ? ""
+            : '<span class="notification-doc">' + escapeHtml(documentName) + "</span>") +
+          "<p>" +
+          text(notification.bodyKey) +
+          "</p></li>"
         );
       }
 
@@ -4417,6 +4612,16 @@
           update(openDocumentPreview(view, control.dataset.previewDocument));
           return;
         }
+        /* A message notification lands her at the bottom of the thread with the
+           caret in the box: the answer is the point of following it. */
+        if (control.dataset.notificationChat) {
+          update(openChat(view));
+          var thread = document.getElementById("thread-body");
+          if (thread) thread.scrollTop = thread.scrollHeight;
+          var reply = document.getElementById("composer-input");
+          if (reply) reply.focus();
+          return;
+        }
         if (control.dataset.drawerTab) {
           update(setDrawerTab(view, control.dataset.drawerTab));
           return;
@@ -4622,9 +4827,12 @@
         ASSISTANT_REPLY_MS: ASSISTANT_REPLY_MS,
         openDocument: openDocument,
         openDocumentPreview: openDocumentPreview,
+        openChat: openChat,
         closeDocument: closeDocument,
         setDrawerTab: setDrawerTab,
         toggleNotifications: toggleNotifications,
+        notificationsFor: notificationsFor,
+        unseenNotifications: unseenNotifications,
         trapFocus: trapFocus,
         handleDrawerKeydown: handleDrawerKeydown,
         sendBorrowerMessage: sendBorrowerMessage,

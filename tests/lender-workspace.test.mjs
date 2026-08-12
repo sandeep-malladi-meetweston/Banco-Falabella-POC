@@ -1889,7 +1889,9 @@ test("her line over the bridge is still work, and is still announced", () => {
    item" here, so a heading could read "4 open" over a queue that only ever
    listed two decisions — the other two were her words, waiting on a reply the
    tab already handles. These lock in that a pending message raises its own
-   count there and nowhere else. */
+   count there, and stays off the queue that lists what to decide — while
+   still reaching the board's own Notifications tile and card, the same way
+   the Conversation tab's own count does. */
 test("a pending message is not counted among the open items needing a decision", () => {
   let state = workspace.sendBorrowerMessage(
     openingState(),
@@ -1922,9 +1924,11 @@ test("a pending message is not counted among the open items needing a decision",
   );
 
   /* The portfolio's own Notifications tile is a sum across every case, so
-     what it should hold still is the two messages' own contribution to
+     what it should hold is exactly the two messages' own contribution to
      it — not its absolute total, which the other eleven fixtures already
-     carry a share of. */
+     carry a share of. Unlike the case's own queue, the board's tile and
+     card read `openCount`, which folds in a case's pending messages
+     (§openCount), so the tile rises by the two she just sent. */
   const before = lender.portfolioMetrics(lender.buildPortfolio(), NOW);
   const after = lender.portfolioMetrics(
     lender.buildPortfolio(lender.FALLBACK_CASE, state),
@@ -1932,8 +1936,8 @@ test("a pending message is not counted among the open items needing a decision",
   );
   assert.equal(
     after.notificationCount,
-    before.notificationCount,
-    "the two new messages should not have raised the board's own Notifications tile"
+    before.notificationCount + 2,
+    "the two new messages should have raised the board's own Notifications tile"
   );
 });
 

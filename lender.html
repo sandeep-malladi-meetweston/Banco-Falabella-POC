@@ -1738,23 +1738,29 @@
       /* =============================================================== metrics */
 
       /* A message is not a decision waiting on the desk — it is answered from
-         the Conversation tab, not settled with a verdict — so counting it
-         alongside a document exception is what let a badge or a card say "4"
-         when only two of those four were ever hers to decide. Every count of
-         "how much needs the desk" reads through this, never straight off
-         `openReviewItems`, so a pending message can raise it in the
-         Conversation tab's own count (§pendingMessageIds) without also
-         raising it here. Filtering by review reason (§filterLoans) is the one
-         place a message is deliberately still a reason to find a case by, so
-         it reads `openReviewItems` directly instead. */
+         the Conversation tab, not settled with a verdict — so it never joins
+         the rows a case's own Needs-review queue lists or the brief the
+         assistant writes about them (§needsReviewRows, §dealAssistantBrief):
+         those are what to decide, and a message is not one. Filtering by
+         review reason (§filterLoans) is the one place a message is
+         deliberately still a reason to find a case by, so it reads
+         `openReviewItems` directly instead. */
       function actionableReviewItems(state) {
         return workspace.openReviewItems(state).filter(function (item) {
           return item.type !== "borrower-message";
         });
       }
 
+      /* The board's own count, though, is not the desk's decision list — it is
+         the same "what's waiting on this case" the card and the portfolio
+         tile both say "Notifications" about, so a text she just sent belongs
+         in it exactly as much as a document exception does. Reading
+         `pendingMessageIds` (§3614) rather than `openReviewItems` directly
+         keeps this the same fact the Conversation tab counts, so the board
+         and the tab never disagree about how many of her messages are still
+         unanswered. */
       function openCount(loan) {
-        return actionableReviewItems(loan.state).length;
+        return actionableReviewItems(loan.state).length + Object.keys(pendingMessageIds(loan.state)).length;
       }
 
       function sumRequestedUF(loans) {
@@ -2300,15 +2306,23 @@
          for a title or an inspection still out. */
       function renderLoanCard(loan) {
         var open = actionableReviewItems(loan.state);
+        /* Her unanswered texts count here too (§openCount), so the card that
+           says "3 notifications" and the badge on this case's own
+           Conversation tab never tell two different stories. Worst first
+           still picks the reason named, the same order everywhere else on
+           the board reads it in — a document exception outranks a message,
+           and only a case with nothing else open names the message itself. */
+        var pendingMessages = Object.keys(pendingMessageIds(loan.state)).length;
+        var totalOpen = open.length + pendingMessages;
         /* The count first, then what the newest one is about: a card that says
            "2 notifications · New upload" tells the officer both how much is
            waiting and what she is walking into, which "Needs review · New
            upload" never did. */
-        var chip = open.length
+        var chip = totalOpen
           ? '<span class="review-reason"><span aria-hidden="true">◆</span> ' +
             text("lender.card.review-chip", {
-              notifications: notificationsPhrase(open.length),
-              reason: t("review." + open[0].type)
+              notifications: notificationsPhrase(totalOpen),
+              reason: t("review." + (open.length ? open[0].type : "borrower-message"))
             }) +
             "</span>"
           : "";
@@ -2320,7 +2334,7 @@
         var flag = pendingFlagFor(loan);
         return (
           '<button class="loan-card' +
-          (open.length ? " needs-review" : "") +
+          (totalOpen ? " needs-review" : "") +
           (flag ? " has-flag" : "") +
           '" type="button" data-case-id="' +
           escapeHtml(loan.caseId) +
@@ -3622,40 +3636,48 @@
       function caseConversation(loan) {
         var pending = pendingMessageIds(loan.state);
         var all = [];
+        /* One counter across every document, not each document's own index: two
+           messages filed in the same minute on *different* documents both used
+           to claim position 0, which left their order down to whether the
+           engine's sort happened to be stable. A single sequence makes the
+           tie-break the order they were actually collected in. */
+        var sequence = 0;
         workspace.DOCUMENT_IDS.forEach(function (documentId) {
           var record = loan.state.documents[documentId];
           if (!record) return;
-          record.messages.forEach(function (message, index) {
+          record.messages.forEach(function (message) {
             all.push({
               id: message.id,
               author: message.author,
               text: message.text,
               timestamp: message.timestamp,
               documentId: documentId,
-              order: index,
+              order: sequence++,
               pending: Boolean(pending[message.id])
             });
           });
         });
         /* Sort is not guaranteed stable across every engine this might run in
            (§documentsByAttention), so two messages filed in the same minute
-           keep the order they were pushed onto their own document in. */
+           keep the order they were collected in. */
         all.sort(function (a, b) {
           if (a.timestamp !== b.timestamp) return a.timestamp < b.timestamp ? -1 : 1;
           return a.order - b.order;
         });
-        /* Still open moves to the end, in the order it arrived relative to
-           the other messages still open — the thread's own version of a
-           queue that never lets an unanswered question scroll out of sight.
-           History that is already settled keeps its place, chronological
-           among itself. */
-        var settled = all.filter(function (message) {
-          return !message.pending;
-        });
-        var open = all.filter(function (message) {
-          return message.pending;
-        });
-        return settled.concat(open);
+        /* Chronological, full stop — a conversation is a conversation.
+           Unanswered messages used to be lifted out and re-appended at the
+           end, so that nothing still open could scroll out of sight. What that
+           actually produced was not a thread at all: every reply from the desk
+           floated into one block at the top and every question she was still
+           waiting on sank into another at the bottom, so a back-and-forth read
+           as two stacks and no exchange answered the message above it. A
+           question and its answer belong next to each other, and being
+           unanswered is a property of a message, not a place in the thread —
+           it is already said in the bubble itself (`data-pending`, the amber
+           ring and the "awaiting reply" tag), counted on the tab's own badge,
+           and linked from the queue's "N awaiting your reply". None of that
+           needed the order sacrificed to it. */
+        return all;
       }
 
       function renderConversationBubble(loan, message) {
@@ -5868,6 +5890,28 @@
            developer's reply would, so the gate, the brief and the analysis card
            all read the case she has just made rather than the one she found. */
         next = workspace.settleConditionsFor(next, documentId, stamp);
+        /* The notice is written whatever happens to it next, because it is a
+           thing the desk said and not a side effect of the bridge being
+           there. It used to be built inside the `options.storage` branch
+           below, which made a message the borrower could read on her phone
+           that existed nowhere on this side: the officer settled a document
+           from its own review section, her portal said so within the second,
+           and the Conversation tab here — the one page whose whole job is
+           every word that passed between them — had no record of it. Filed
+           as a lender message on the document it is about, it reaches that
+           tab the same way a reply or a send-back already does
+           (§caseConversation reads `record.messages`), so the thread the
+           desk reads and the thread she reads are the same thread. */
+        var notice = t("lender.conversation.verdict-notice", {
+          document: t("doc." + documentId + ".name"),
+          verdict: t("verdict." + verdict)
+        });
+        if (verdict === "accepted-with-condition" && wording) notice += " " + wording;
+        /* Deliberately not `resolveConversationOnlyItems`: settling a document
+           is not an answer to a question she asked about it
+           (§commitReviewDecision), so this files the words without closing
+           anything of hers. */
+        next = workspace.sendLenderMessage(next, documentId, notice, stamp);
         var applied = outcome(state, next, "lender.status.override-applied", {
           document: t("doc." + documentId + ".name"),
           verdict: t("verdict." + verdict)
@@ -5876,13 +5920,9 @@
            portal says so too: without this her checklist kept showing whatever
            it showed before the desk ever decided, on a document the desk had
            already settled. The same words either way — what the notice reads
-           in the audit trail is what her thread reads over the bridge. */
+           in the audit trail is what her thread reads over the bridge, and now
+           what this side's own Conversation tab shows as well. */
         if (options && options.storage !== undefined) {
-          var notice = t("lender.conversation.verdict-notice", {
-            document: t("doc." + documentId + ".name"),
-            verdict: t("verdict." + verdict)
-          });
-          if (verdict === "accepted-with-condition" && wording) notice += " " + wording;
           applied.bridged = bridgeSend(options.storage, {
             from: BRIDGE_ROLE,
             text: notice,

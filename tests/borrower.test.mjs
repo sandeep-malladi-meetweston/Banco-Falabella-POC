@@ -629,6 +629,63 @@ test("the open-items status pill is a real button that opens the same tray as th
   assert.match(openMarkup, /class="status-pill"[^>]*aria-expanded="true"/);
 });
 
+/* The tray is two lists, because the two kinds are answered in two different
+   places. At the handoff the case is waiting on two documents and the team has
+   had the last word in the conversation, so it reads 2 and 1. */
+test("the tray separates the document notifications from the message one", () => {
+  const view = finished();
+  assert.deepEqual(
+    plain(borrower.notificationsFor(view)).map(item => item.kind),
+    ["document", "document", "chat"]
+  );
+  assert.equal(borrower.unseenNotifications(view).length, 3);
+
+  const markup = borrower.renderTopbar(borrower.toggleNotifications(view));
+  assert.match(markup, /data-notification-kind="document"[\s\S]*data-notification-kind="chat"/);
+  assert.ok(markup.includes(shown("borrower.notifications.group-documents")));
+  assert.ok(markup.includes(shown("borrower.notifications.group-chat")));
+  /* Each group counts its own, so neither heading speaks for the other. */
+  assert.match(markup, /notification-group-count">2</);
+  assert.match(markup, /notification-group-count">1</);
+  /* And each names its own door out: the document's page, or the conversation. */
+  assert.match(markup, /data-preview-document="tax-folder"/);
+  assert.match(markup, /data-notification-chat="open"/);
+  assert.ok(markup.includes(shown("borrower.notifications.chat-title")));
+});
+
+test("the message notification is derived from whose turn it is", () => {
+  const view = finished();
+  const answered = borrower.sendBorrowerMessage(view, "Mando la página completa hoy").viewState;
+  assert.deepEqual(
+    plain(borrower.notificationsFor(answered)).map(item => item.kind),
+    ["document", "document"],
+    "she has answered, so nothing is waiting on her in the conversation"
+  );
+
+  /* Read the tray, then hear back: the reply is a new unread line rather than
+     one the last opening already marked read. */
+  const read = borrower.toggleNotifications(answered);
+  assert.equal(borrower.unseenNotifications(read).length, 0);
+  const replied = borrower.assistantReplies(read, "tax-folder");
+  const waiting = plain(borrower.notificationsFor(replied)).filter(item => item.kind === "chat");
+  assert.equal(waiting.length, 1);
+  assert.equal(borrower.unseenNotifications(replied).length, 1);
+});
+
+test("following the message notification lands her on the conversation", () => {
+  const away = borrower.goToPhase(borrower.toggleNotifications(finished(), true), "simulate");
+  const followed = borrower.openChat(away);
+  assert.equal(followed.phase, "documents");
+  assert.equal(followed.scrollTop, true, "a page change asks for the top of the page");
+  assert.equal(followed.notificationsOpen, false);
+  assert.equal(followed.openDocumentId, null, "the drawer does not stay over the thread");
+
+  /* Already there is not a page change. */
+  const stayed = borrower.openChat(borrower.toggleNotifications(finished(), true));
+  assert.equal(stayed.phase, "documents");
+  assert.equal(stayed.scrollTop, false);
+});
+
 test("the demo controls play, pause, change speed, restart and switch language", () => {
   const paused = borrower.setPaused(finished(), true);
   const markup = borrower.renderDemoControls(paused);

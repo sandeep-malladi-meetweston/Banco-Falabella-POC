@@ -853,6 +853,25 @@
       "borrower.notifications.open": "Notifications, {count} new",
       "borrower.notifications.empty": "Nothing needs your attention right now.",
       "borrower.notifications.preview-aria": "Preview {document}",
+      /* The tray is two lists, because the two kinds are answered in two
+         different places: a document is answered by sending a file, a message
+         is answered by writing back. */
+      "borrower.notifications.group-documents": "Documents",
+      "borrower.notifications.group-chat": "Messages",
+      /* The split, said once at the top of the tray before the two lists below
+         repeat it — so "what is waiting on me" is answered by kind, in words,
+         without her having to count two lists to find out. Only the kinds that
+         actually have something are named, so the line never reads "0 chat
+         notifications". */
+      "borrower.notifications.count-document-one": "1 document notification",
+      "borrower.notifications.count-document-many": "{count} document notifications",
+      "borrower.notifications.count-chat-one": "1 chat notification",
+      "borrower.notifications.count-chat-many": "{count} chat notifications",
+      "borrower.notifications.summary-separator": " · ",
+      "borrower.notifications.chat-title": "New message from the mortgage team",
+      "borrower.notifications.chat-body":
+        "The last word in your conversation is theirs, so it is your turn. Open the chat to read it and answer there.",
+      "borrower.notifications.chat-aria": "Open the conversation",
 
       "borrower.control.play": "Play",
       "borrower.control.pause": "Pause",
@@ -2051,6 +2070,17 @@
       "borrower.notifications.open": "Avisos, {count} nuevos",
       "borrower.notifications.empty": "Nada requiere tu atención ahora.",
       "borrower.notifications.preview-aria": "Ver vista previa de {document}",
+      "borrower.notifications.group-documents": "Documentos",
+      "borrower.notifications.group-chat": "Mensajes",
+      "borrower.notifications.count-document-one": "1 aviso de documento",
+      "borrower.notifications.count-document-many": "{count} avisos de documentos",
+      "borrower.notifications.count-chat-one": "1 aviso de mensaje",
+      "borrower.notifications.count-chat-many": "{count} avisos de mensajes",
+      "borrower.notifications.summary-separator": " · ",
+      "borrower.notifications.chat-title": "Nuevo mensaje del equipo hipotecario",
+      "borrower.notifications.chat-body":
+        "La última palabra en tu conversación es suya, así que es tu turno. Abre el chat para leerlo y responder ahí.",
+      "borrower.notifications.chat-aria": "Abrir la conversación",
 
       "borrower.control.play": "Reproducir",
       "borrower.control.pause": "Pausar",
