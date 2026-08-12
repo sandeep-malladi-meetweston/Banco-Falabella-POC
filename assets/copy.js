@@ -1338,11 +1338,11 @@
 
       /* ============================================================= stage */
       "stage.new-applications": "Solicitudes nuevas",
-      "stage.gathering-information": "Reunión de antecedentes",
-      "stage.underwriting": "Evaluación de riesgo",
+      "stage.gathering-information": "Recopilación de antecedentes",
+      "stage.underwriting": "Análisis de riesgo",
       "stage.approved": "Aprobado",
-      "stage.waiting-to-close": "Esperando cierre",
-      "stage.closed": "Cerrado",
+      "stage.waiting-to-close": "Legalización",
+      "stage.closed": "Firmas y registro completo",
       "stage.disbursed": "Cursado",
 
       /* =============================================================== doc */
@@ -1361,7 +1361,7 @@
       "doc.down-payment-proof.purpose": "Confirma que los fondos del pie están disponibles.",
       "doc.purchase-promise.name": "Promesa de compraventa",
       "doc.purchase-promise.purpose":
-        "Debe estar firmada el 01-01-2025 o después para calificar a FOGAES.",
+        "Debe estar firmada el 01/01/2025 o después para calificar a FOGAES.",
       "doc.first-home-affidavit.name": "Declaración jurada de primera vivienda (firmada)",
       "doc.first-home-affidavit.purpose":
         "Ya consultamos en línea el Registro de Deudores; solo falta tu firma.",
@@ -1383,14 +1383,14 @@
 
       /* ============================================================= audit */
       "audit.application-submitted": "Solicitud enviada",
-      "audit.document-checklist-started": "Checklist de documentos iniciado",
+      "audit.document-checklist-started": "Lista de verificación de documentos iniciada",
       "audit.borrower-message-sent": "Mensaje de la solicitante enviado",
       "audit.lender-reply-sent": "Respuesta del banco enviada",
       "audit.assistant-message-sent": "El agente respondió a la solicitante",
       "audit.review-item-resolved": "Ítem de revisión resuelto",
       "audit.new-upload-received": "Nueva carga recibida",
       "audit.document-uploaded": "Documento subido",
-      "audit.document-verdict-changed": "Estado del documento modificado",
+      "audit.document-verdict-changed": "Veredicto del documento modificado",
       "audit.document-exception-created": "Excepción de documento levantada",
       "audit.deed-deadline-raised": "Plazo de escritura levantado",
       "audit.condition-cleared": "Condición cumplida",
@@ -1410,7 +1410,7 @@
       "audit.agent-handoff-prepared": "El agente preparó la derivación",
 
       "audit.detail.intake-reviewed":
-        "Checklist armado desde las reglas del producto: nueve documentos, garantía FOGAES, declaración de primera vivienda. Sin expediente previo para este RUT.",
+        "Lista de verificación construida a partir de las reglas del producto: nueve documentos, garantía FOGAES, declaración de primera vivienda. Sin expediente previo para este RUT.",
       "audit.detail.checklist-message":
         "“Hola Javiera: esto es todo lo que necesitamos para el crédito. Sube cada documento cuando lo tengas y los voy revisando a medida que lleguen.”",
       "audit.detail.down-payment-checked":
@@ -1424,7 +1424,7 @@
       "audit.detail.tax-folder-message":
         "“El RUT de la página 1 de tu carpeta tributaria llegó ilegible, ¿puedes enviar esa página de nuevo?”",
       "audit.detail.registry-checked":
-        "Certificado obtenido del Conservador de Bienes Raíces. Fojas 1.842 N°1.190 (2024): una hipoteca a favor de otro banco, no declarada en la solicitud.",
+        "Certificado obtenido del Conservador de Bienes Raíces. Fojas 1.842 N° 1.190 (2024): una hipoteca a favor de otro banco, no declarada en la solicitud.",
       "audit.detail.policy-checked":
         "Un gravamen no declarado excede lo que el agente puede resolver. Caso marcado para una persona.",
       "audit.detail.case-routed":
@@ -1437,7 +1437,7 @@
         "Resumen del caso, las dos excepciones y las dos condiciones de aprobación preparados para la ejecutiva de turno.",
 
       "audit.loan-approved": "Crédito aprobado con condiciones",
-      "audit.loan-approved-override": "Crédito aprobado por anulación manual",
+      "audit.loan-approved-override": "Crédito aprobado por excepción manual",
       "audit.loan-declined": "Solicitud rechazada por la ejecutiva",
       "audit.approval-signed": "Aprobación firmada",
       "audit.loan-disbursed": "Crédito cursado",
@@ -1473,7 +1473,7 @@
       "lender.nav.needs-review": "Notificaciones",
       "lender.nav.signing-soon": "Firma próxima",
       "lender.nav.disbursed": "Cursados",
-      "lender.nav.closed-archived": "Cerrados",
+      "lender.nav.closed-archived": "Firmas y registro completo",
 
       "lender.metrics-aria-label": "Resumen de la cartera",
       "lender.metric.active-origination": "Originación activa",
@@ -1500,7 +1500,7 @@
       "lender.card.needs-review": "Notificaciones",
       "lender.card.review-chip": "{notifications} · {reason}",
       "lender.card.deed-date": "Cierre {date}",
-      "lender.card.live-case": "En vivo",
+      "lender.card.live-case": "Caso activo",
       "lender.card.pending-title": "Título pendiente",
       "lender.card.pending-inspection": "Inspección pendiente",
       "lender.card.pending-both": "Título + inspección pendientes",
@@ -1511,10 +1511,10 @@
       "lender.substatus.application-received": "Solicitud recibida",
       "lender.substatus.new-upload": "Nueva carga",
       "lender.substatus.appraisal-below-request": "Tasación bajo lo solicitado",
-      "lender.substatus.credit-review": "En evaluación de riesgo",
+      "lender.substatus.credit-review": "En análisis de riesgo",
       "lender.substatus.deed-in-days": "Escritura en {days} días",
       "lender.substatus.clear-to-sign": "Listo para firmar",
-      "lender.substatus.awaiting-closing": "Escritura firmada · esperando cierre",
+      "lender.substatus.awaiting-closing": "Escritura firmada · en legalización",
       "lender.substatus.disbursed-on": "Cursado el {date}",
       "lender.substatus.performing": "Al día",
       "lender.substatus.paid-off-on": "Pagado el {date}",
@@ -1529,17 +1529,17 @@
 
       "lender.notifications.title": "Avisos del caso",
       "lender.notifications.open": "Avisos del caso, {count} abiertos",
-      "lender.notifications.empty": "Abre un caso para ver qué está esperando.",
-      "lender.notifications.clear": "Nada en este caso te necesita.",
+      "lender.notifications.empty": "Abre un caso para ver qué está pendiente.",
+      "lender.notifications.clear": "No hay nada pendiente en este caso.",
       "lender.notifications.review-cta": "Abrir el documento",
       "lender.notifications.exception":
-        "Un chequeo de este documento no coincidió. Ábrelo para ver la comparación.",
+        "Una verificación de este documento no coincidió. Ábrelo para ver la comparación.",
       "lender.notifications.new-upload": "Llegó un archivo nuevo y espera un veredicto.",
       "lender.notifications.borrower-message": "{borrower} escribió sobre este documento.",
       "lender.notifications.deed-deadline":
         "La fecha de escritura está cerca y el caso no está firmado.",
       "lender.notifications.detail.title-certificate":
-        "El certificado registra una hipoteca a favor de otro banco en Fojas 1.842 N°1.190 (2024). La solicitud declaró sin gravámenes. Todo lo demás del certificado — propietario, rol de avalúo, vigencia — coincidió.",
+        "El certificado registra una hipoteca a favor de otro banco en Fojas 1.842 N° 1.190 (2024). La solicitud declaró sin gravámenes. Todo lo demás del certificado — propietario, rol de avalúo, vigencia — coincidió.",
       "lender.notifications.detail.tax-folder":
         "La página 1 llegó cortada y no se pudo leer el RUT del contribuyente (18.452.30_-4). Los otros tres campos de la carpeta coincidieron.",
       "lender.notifications.detail.purchase-promise":
@@ -1558,7 +1558,7 @@
         "Revisado automáticamente · {uploaded} de {total} documentos recibidos",
       "lender.analysis.correct-heading": "En orden",
       "lender.analysis.wrong-heading": "Requiere revisión",
-      "lender.analysis.checks-failed": "{count} chequeo(s) de campo no coincidieron",
+      "lender.analysis.checks-failed": "{count} verificación(es) de campo no coincidieron",
       "lender.analysis.open-item": "{reason} · {document}",
       "lender.analysis.open-item-aria": "Abrir {document} para resolver {reason}",
       "lender.analysis.none-wrong": "No queda nada pendiente en este caso.",
@@ -1566,7 +1566,7 @@
       "lender.analysis.documents-accepted": "{count} de {total} documentos aceptados",
       "lender.analysis.documents-review": "{count} de {total} documentos en revisión",
       "lender.analysis.documents-missing": "{count} documento(s) aún sin recibir",
-      "lender.analysis.checks-passed": "{count} de {total} chequeos de campo coincidieron",
+      "lender.analysis.checks-passed": "{count} de {total} verificaciones de campo coincidieron",
       "lender.analysis.affordability-ok": "Dividendo/renta {ratio}, bajo el techo de {cap}",
       "lender.analysis.affordability-over": "Dividendo/renta {ratio}, sobre el techo de {cap}",
       "lender.analysis.guarantee": "Garantía FOGAES confirmada sobre {amount}",
@@ -1600,7 +1600,7 @@
       "lender.review.reply-label": "Responder sobre este ítem",
       "lender.review.reply-placeholder": "Responder a {borrower}…",
       "lender.review.reply-in-chat": "Responder en la conversación",
-      "lender.review.mark-resolved": "Marcar resuelto",
+      "lender.review.mark-resolved": "Marcar como resuelto",
       "lender.review.send-reply": "Enviar respuesta y resolver",
       "lender.review.decision-label": "Decisión",
       "lender.review.decision.reply": "Responder y resolver",
@@ -1645,14 +1645,14 @@
       "lender.documents.channel-whatsapp": "Recibido por WhatsApp",
       "lender.documents.channel-portal": "Subido desde el portal de la solicitante",
       "lender.documents.page-heading": "La página tal como llegó",
-      "lender.documents.checks-heading": "Chequeos de revisión",
+      "lender.documents.checks-heading": "Verificaciones de revisión",
       "lender.documents.override-heading": "Decisión del ejecutivo",
       "lender.documents.override-label": "Veredicto",
       "lender.documents.override-condition-label": "Condición",
       "lender.documents.override-condition-placeholder":
         "Obligatoria al aceptar con condición",
       "lender.documents.override-apply": "Aplicar decisión",
-      "lender.documents.request-label": "Devolvérselo a la solicitante",
+      "lender.documents.request-label": "Devolver el documento a la solicitante",
       "lender.documents.request-placeholder":
         "Di qué está mal y qué necesitas en su lugar…",
       "lender.documents.request-again": "Volver a pedir este documento",
@@ -1680,10 +1680,10 @@
       "lender.conversation.pending": "Esperando tu respuesta",
       "lender.conversation.pending-link": "{count} esperando tu respuesta",
       "lender.conversation.seed-routed":
-        "Tu certificado de dominio vigente muestra una hipoteca de otro banco inscrita sobre la propiedad. La derivé a un especialista hipotecario con el documento y los datos de inscripción.",
+        "Tu certificado de dominio vigente registra una hipoteca de otro banco inscrita sobre la propiedad. La derivé a un especialista hipotecario con el documento y los datos de inscripción.",
       "lender.conversation.seed-reply": "Ok, quedo atenta. 🙏",
       "lender.conversation.seed-routed-377":
-        "Tu promesa de compraventa se firmó tres semanas después del informe de tasación. Debería haberlo seguido de inmediato, así que la derivé a evaluación de riesgo para confirmar la fecha correcta antes de continuar.",
+        "Tu promesa de compraventa se firmó tres semanas después del informe de tasación. Debería haberlo seguido de inmediato, así que la derivé a análisis de riesgo para confirmar la fecha correcta antes de continuar.",
       "lender.conversation.seed-reply-377": "Entendido, gracias por revisarlo.",
 
       "lender.documents.history-heading": "Historial de carga",
@@ -1693,10 +1693,10 @@
       "lender.documents.comparison-field": "Campo",
       "lender.documents.comparison-stated": "Declarado en la solicitud",
       "lender.documents.comparison-found": "Encontrado en el documento",
-      "lender.documents.folio": "Fojas 1.842 N°1.190 (2024)",
+      "lender.documents.folio": "Fojas 1.842 N° 1.190 (2024)",
       "lender.documents.encumbrance-stated": "Sin gravámenes declarados",
       "lender.documents.encumbrance-found":
-        "Hipoteca a favor de otro banco — Fojas 1.842 N°1.190 (2024)",
+        "Hipoteca a favor de otro banco — Fojas 1.842 N° 1.190 (2024)",
       "lender.documents.encumbrance-note":
         "Confirmar si esta hipoteca corresponde al crédito constructor de la inmobiliaria y si se alza en la misma escritura.",
       "lender.documents.owner-stated": "Inmobiliaria Aconcagua SpA",
@@ -1757,9 +1757,9 @@
       "lender.source.first-home.label": "Primera vivienda · sin inmuebles a su nombre",
       "lender.source.first-home.source": "Conservador de Bienes Raíces · SII",
       "lender.source.first-home.result": "0 propiedades",
-      "lender.source.promise-date.label": "Promesa de compraventa firmada desde el 01-01-2025",
+      "lender.source.promise-date.label": "Promesa de compraventa firmada desde el 01/01/2025",
       "lender.source.promise-date.source": "Inmobiliaria · confirmado contra el documento",
-      "lender.source.promise-date.result": "12-03-2026",
+      "lender.source.promise-date.result": "12/03/2026",
       "lender.source.no-subsidy.label": "Sin subsidio habitacional previo",
       "lender.source.no-subsidy.source": "Ministerio de Vivienda (MINVU)",
       "lender.source.no-subsidy.result": "Sin registros",
@@ -1790,16 +1790,16 @@
       "lender.action.sign": "Firmar la aprobación",
       "lender.action.reset": "Reiniciar caso",
       "lender.action.decline": "Rechazar la solicitud",
-      "lender.action.override": "Anulación manual…",
+      "lender.action.override": "Revisar Notificaciones",
 
       "lender.email.heading": "Consulta a la inmobiliaria",
       "lender.email.to-label": "Para",
       "lender.email.to": "contacto@inmobiliariaaconcagua.cl",
-      "lender.email.subject-label": "Materia",
+      "lender.email.subject-label": "Asunto",
       "lender.email.subject":
-        "Caso {case} · Hipoteca en Fojas 1.842 N°1.190 (2024) · rol de avalúo 1234-56",
+        "Caso {case} · Hipoteca en Fojas 1.842 N° 1.190 (2024) · rol de avalúo 1234-56",
       "lender.email.body":
-        "Estimado equipo de Inmobiliaria Aconcagua:\n\nEstamos evaluando una solicitud de crédito hipotecario sobre la propiedad del rol de avalúo 1234-56 del proyecto Aconcagua en Maipú, caso {case}.\n\nEl certificado de dominio vigente registra una hipoteca a favor de otro banco en Fojas 1.842 N°1.190 del año 2024, que no fue declarada en la solicitud. Les agradecemos confirmar si corresponde al crédito constructor y si se alzará simultáneamente en la misma escritura, adjuntando el borrador de alzamiento en tal caso.\n\nSaludos cordiales,\n{officer} · {role} · Banco Falabella",
+        "Estimados señores:\n\nJunto con saludar, informamos que nos encontramos evaluando una solicitud de crédito hipotecario sobre la propiedad del rol de avalúo 1234-56 del proyecto Aconcagua en Maipú, caso {case}.\n\nEl certificado de dominio vigente registra una hipoteca a favor de otro banco en Fojas 1.842 N° 1.190 del año 2024, que no fue declarada en la solicitud. Agradeceremos confirmar si corresponde al crédito constructor y si se alzará simultáneamente en la misma escritura, adjuntando el borrador de alzamiento en tal caso.\n\nAtentamente,\n{officer} · {role} · Banco Falabella",
       "lender.email.send": "Enviar consulta",
       "lender.email.sent-announcement":
         "Consulta enviada a la inmobiliaria. A la espera de su respuesta.",
@@ -1832,9 +1832,9 @@
       "lender.assistant.brief-quiet": "Nada en este caso te está esperando.",
 
       "lender.assistant.answer-title-open":
-        "El certificado de dominio registra una hipoteca a favor de otro banco en Fojas 1.842 N°1.190 (2024). La solicitud declaró sin gravámenes. Propietario, rol de avalúo y vigencia coincidieron, así que es un campo, no un documento malo. Suele ser el crédito constructor de la inmobiliaria: pídeles que lo confirmen y que se alce en la misma escritura.",
+        "El certificado de dominio registra una hipoteca a favor de otro banco en Fojas 1.842 N° 1.190 (2024). La solicitud declaró sin gravámenes. Propietario, rol de avalúo y vigencia coincidieron, así que es un campo, no un documento malo. Suele ser el crédito constructor de la inmobiliaria: pídeles que lo confirmen y que se alce en la misma escritura.",
       "lender.assistant.answer-title-settled":
-        "El certificado de dominio está resuelto — {verdict}. El gravamen en Fojas 1.842 N°1.190 (2024) queda cubierto por la condición de alzamiento y no por un segundo documento.",
+        "El certificado de dominio está resuelto — {verdict}. El gravamen en Fojas 1.842 N° 1.190 (2024) queda cubierto por la condición de alzamiento y no por un segundo documento.",
       "lender.assistant.answer-tax-open":
         "La página 1 de la Carpeta Tributaria llegó cortada y no se pudo leer el RUT del contribuyente (18.452.30_-4). Los otros tres campos coincidieron, así que la carpeta es el documento correcto — falta la página 1 completa.",
       "lender.assistant.answer-tax-settled":
@@ -1846,7 +1846,7 @@
       "lender.assistant.answer-approval-ready":
         "No hay nada frenándola. Las dos condiciones están cumplidas y {amount} está dentro de tu atribución delegada de {authority}.",
       "lender.assistant.answer-affordability":
-        "El dividendo es {payment} contra una renta líquida verificada de {income} — {ratio}, bajo el techo de {cap}. Si las tasas suben 2 puntos llega a {stressed}, sobre el techo; esa excepción queda declarada en el expediente y no escondida, y está en la pestaña de Riesgo junto al escenario que la produce.",
+        "El dividendo es {payment} contra una renta líquida verificada de {income} — {ratio}, bajo el techo de {cap}. Si las tasas suben 2 puntos porcentuales llega a {stressed}, sobre el techo; esa excepción queda declarada en el expediente y no escondida, y está en la pestaña de Riesgo junto al escenario que la produce.",
       "lender.assistant.answer-guarantee":
         "FOGAES cubre {amount}, {share} del crédito — el tramo por sobre el límite estándar de 80% de financiamiento. Es lo que hace financiable el crédito al 90%; no lo hace más barato. El subsidio de tasa es un beneficio aparte y ya está incorporado en la tasa {rate}.",
       "lender.assistant.answer-documents-open":
@@ -1855,9 +1855,9 @@
       "lender.assistant.answer-borrower":
         "A {borrower} se le dijo por última vez que un especialista hipotecario tiene el certificado de dominio y que no se necesita nada de ella. Usa el cuadro de mensaje del resumen para escribirle; llega al mismo hilo de WhatsApp que ella está leyendo.",
       "lender.assistant.answer-developer":
-        "La consulta indica el caso, las fojas y el rol de avalúo, y le pide a Inmobiliaria Aconcagua confirmar si la hipoteca es su crédito constructor y si se alza en la misma escritura. Está redactada para que la leas antes de que salga.",
+        "La consulta indica el caso, las fojas y el rol de avalúo, y le pide a Inmobiliaria Aconcagua confirmar si la hipoteca es su crédito constructor y si se alza en la misma escritura. Está redactada para que la revises antes de su envío.",
       "lender.assistant.answer-no-figures":
-        "Este caso no tiene una solicitud detrás, así que no tengo aritmética para él. Igual puedo responder sobre sus documentos y sus ítems abiertos.",
+        "Este caso no tiene una solicitud detrás, así que no tengo aritmética para él. De todos modos puedo responder sobre sus documentos y sus ítems abiertos.",
       "lender.assistant.answer-unknown":
         "Solo respondo con lo que hay en este caso. Prueba con el certificado de dominio, la Carpeta Tributaria, qué frena la aprobación, la capacidad de pago, la garantía estatal, los documentos o la solicitante.",
 
@@ -1872,9 +1872,9 @@
 
       "lender.assistant.agent.follow-up": "Reunir los documentos pendientes",
       "lender.assistant.agent.follow-up-note":
-        "Abre la conversación, insiste hasta que lleguen y los adjunta al caso",
+        "Abre la conversación, reitera la solicitud hasta obtenerlos y los adjunta al caso",
       "lender.assistant.agent.follow-up-ran":
-        "Abrí la conversación con {borrower} por WhatsApp sobre el documento pendiente, y de aquí en adelante me hago cargo: respondo lo que pregunte, la vuelvo a contactar si no responde y adjunto la página al documento cuando llegue. Cada paso queda en la trazabilidad. Vuelvo a ti cuando el documento esté adentro, o cuando algo necesite tu decisión.",
+        "Abrí la conversación con {borrower} por WhatsApp sobre el documento pendiente, y de aquí en adelante me hago cargo: respondo lo que pregunte, la vuelvo a contactar si no responde y adjunto la página al documento cuando llegue. Cada paso queda en la trazabilidad. Te aviso cuando el documento esté incorporado, o cuando algo necesite tu decisión.",
       "lender.assistant.agent.escalate": "Derivar al gerente",
       "lender.assistant.agent.escalate-note": "Contrasta el caso con tu atribución delegada",
       "lender.assistant.agent.scan": "Revisar la calidad del expediente",
@@ -1882,11 +1882,12 @@
       "lender.assistant.agent.scan-ran-clear":
         "No queda nada pendiente. Los {total} documentos están aceptados y no hay ítems de revisión abiertos.",
       "lender.assistant.agent.scan-ran": "Pendiente en este caso: {findings}.",
-      "lender.assistant.agent.reorder": "Reencargar un servicio (inspección, dominio, tasación)",
+      "lender.assistant.agent.reorder":
+        "Volver a solicitar un servicio (inspección, dominio, tasación)",
       "lender.assistant.agent.reorder-note":
-        "Reencarga la inspección; el dominio y la tasación ya se gestionan en otra parte de este caso",
+        "Vuelve a solicitar la inspección; el dominio y la tasación ya se gestionan en otra parte de este caso",
       "lender.assistant.agent.reorder-ran":
-        "Reencargué la inspección — vuelve a quedar pendiente hasta que llegue la nueva, y eso queda en la trazabilidad. El dominio sigue gobernado por el certificado ya presentado y la tasación se encarga al aprobar, según política, así que reencargar no afecta a ninguno de los dos; pregúntame por cualquiera de ellos si quieres su propio estado.",
+        "Solicité nuevamente la inspección — vuelve a quedar pendiente hasta que llegue la nueva, y eso queda en la trazabilidad. El dominio sigue gobernado por el certificado ya presentado y la tasación se encarga al aprobar, según política, así que volver a solicitarla no afecta a ninguno de los dos; pregúntame por cualquiera de ellos si quieres su estado individual.",
       "lender.assistant.scan-documents": "{count} documento(s) aún no aceptados ({names})",
       "lender.assistant.scan-items": "{count} ítem(s) de revisión abiertos ({items})",
       "lender.assistant.scan-conditions": "{count} condición(es) sin cumplir",
@@ -1899,7 +1900,8 @@
       "lender.assistant.next-conditions": "Cumplir {count} condición(es) restantes.",
       "lender.assistant.next-approve": "Aprobar con condiciones y luego firmar.",
       "lender.assistant.next-sign": "Firmar la aprobación.",
-      "lender.assistant.next-none": "No hay nada esperando. Revisa la trazabilidad antes de cerrar.",
+      "lender.assistant.next-none":
+        "No hay nada esperando. Revisa la trazabilidad antes de cerrar.",
 
       "lender.assistant.action-open-document": "Abrir {document}",
       "lender.assistant.action-developer-query": "Redactar la consulta a la inmobiliaria",
@@ -1909,7 +1911,7 @@
 
       "lender.condition.heading": "Condiciones",
       "lender.condition.c1":
-        "Alzamiento simultáneo de la hipoteca en Fojas 1.842 N°1.190 (2024) en la misma escritura.",
+        "Alzamiento simultáneo de la hipoteca en Fojas 1.842 N° 1.190 (2024) en la misma escritura.",
       "lender.condition.c2": "Carpeta Tributaria completa, con el RUT legible en la página 1.",
       "lender.condition.cleared": "Cumplida",
       "lender.condition.open": "Abierta",
@@ -1948,22 +1950,22 @@
       "lender.decision.decline-intro":
         "El rechazo cierra el caso. La solicitante conserva su portal y sus documentos; el motivo de abajo queda en el acta.",
       "lender.decision.decline-confirm": "Registrar el rechazo",
-      "lender.decision.override-heading": "Anulación manual en el caso {case}",
+      "lender.decision.override-heading": "Aprobación por excepción en el caso {case}",
       "lender.decision.override-intro":
-        "Esto aprueba el caso con sus condiciones aún abiertas. Queda registrado como aprobación por anulación, bajo tu atribución delegada de {authority}.",
-      "lender.decision.override-confirm": "Aprobar por anulación",
+        "Esto aprueba el caso con sus condiciones aún abiertas. Queda registrado como aprobación por excepción, bajo tu atribución delegada de {authority}.",
+      "lender.decision.override-confirm": "Aprobar por excepción",
       "lender.decision.cancel": "Cancelar",
       "lender.decision.declined-outcome": "Rechazado",
       "lender.decision.declined-by": "Rechazado por {officer}, {role}.",
       "lender.decision.declined-timestamp": "Rechazado el {timestamp}.",
       "lender.decision.reason": "Motivo: {reason}",
-      "lender.decision.override-badge": "Aprobado por anulación manual",
+      "lender.decision.override-badge": "Aprobado por excepción manual",
       "lender.decision.override-note":
         "Aprobado fuera del control automático por {officer}, {role}, bajo una atribución delegada de {authority}.",
       "lender.decision.declined-announcement":
         "Caso {case} rechazado. La decisión quedó en el acta.",
       "lender.decision.override-announcement":
-        "Caso {case} aprobado por anulación manual. La decisión quedó en el acta.",
+        "Caso {case} aprobado por excepción manual. La decisión quedó en el acta.",
       "lender.decision.decided-already": "El caso {case} ya tiene una decisión.",
 
       "lender.officer.name": "Carolina Reyes",
@@ -2003,7 +2005,7 @@
       "risk.summary-term": "Plazo",
       "risk.summary-rate": "Tasa",
       "risk.summary-payment": "Dividendo mensual",
-      "risk.summary-income": "Renta mensual verificada",
+      "risk.summary-income": "Renta líquida mensual verificada",
       "risk.pti-heading": "Capacidad de pago",
       "risk.pti-explainer":
         "El dividendo mensual de {payment} es {ratio} de la renta líquida verificada de {income}. La política del banco pone techo a la relación dividendo/renta en {cap}.",
@@ -2012,7 +2014,7 @@
       "risk.pti-under-cap": "Dentro del techo de política",
       "risk.stress-heading": "Si las tasas suben 2 puntos",
       "risk.stress-explainer":
-        "Repactado 2 puntos porcentuales más arriba, el dividendo sube a {payment} y la relación dividendo/renta llega a {ratio} — por sobre el techo de política de {cap}. El caso se presenta con esa excepción declarada, no escondida.",
+        "Recalculado con la tasa 2 puntos porcentuales más alta, el dividendo sube a {payment} y la relación dividendo/renta llega a {ratio} — por sobre el techo de política de {cap}. El caso se presenta con esa excepción declarada, no escondida.",
       "risk.stress-over-cap": "Sobre el techo de {cap}",
       "risk.policy-heading": "Política de crédito",
       "risk.policy.payment-to-income":
@@ -2020,7 +2022,7 @@
       "risk.policy.financing":
         "Financiamiento de hasta 90% del valor de la propiedad con la garantía estatal FOGAES; 80% sin ella.",
       "risk.policy.property-cap":
-        "Viviendas nuevas de hasta UF 4.000, con promesa de compraventa firmada el 01-01-2025 o después.",
+        "Viviendas nuevas de hasta UF 4.000, con promesa de compraventa firmada el 01/01/2025 o después.",
       "risk.policy.employment":
         "Contrato indefinido, al menos 12 meses de antigüedad y sin lagunas en las cotizaciones.",
       "risk.policy.appraisal":
@@ -2141,9 +2143,9 @@
       "borrower.check.first-home.label": "Primera vivienda · sin inmuebles a tu nombre",
       "borrower.check.first-home.source": "Conservador de Bienes Raíces · SII",
       "borrower.check.first-home.result": "0 propiedades",
-      "borrower.check.promise-date.label": "Promesa de compraventa firmada desde el 01-01-2025",
+      "borrower.check.promise-date.label": "Promesa de compraventa firmada desde el 01/01/2025",
       "borrower.check.promise-date.source": "Inmobiliaria · confirmado contra el documento",
-      "borrower.check.promise-date.result": "12-03-2026",
+      "borrower.check.promise-date.result": "12/03/2026",
       "borrower.check.no-subsidy.label": "Sin subsidio habitacional previo",
       "borrower.check.no-subsidy.source": "Ministerio de Vivienda (MINVU)",
       "borrower.check.no-subsidy.result": "Sin registros",
@@ -2180,7 +2182,7 @@
       "borrower.result.apply": "Enviar solicitud",
       "borrower.result.simulate-again": "Simular de nuevo",
       "borrower.result.note":
-        "Incluye seguros de desgravamen e incendio. El subsidio de tasa de 0,60 puntos y la garantía estatal FOGAES aplican a viviendas nuevas de hasta UF 4.000 con promesa de compraventa firmada el 01-01-2025 o después, sujeto a la evaluación comercial y de riesgo del banco.",
+        "Incluye seguros de desgravamen e incendio. El subsidio de tasa de 0,60 puntos y la garantía estatal FOGAES aplican a viviendas nuevas de hasta UF 4.000 con promesa de compraventa firmada el 01/01/2025 o después, sujeto a la evaluación comercial y de riesgo del banco.",
       "borrower.result.with-financing": "Financiamiento 90% · pie {amount}",
       "borrower.result.without-financing": "Financiamiento máx. 80% · pie {amount}",
       "borrower.result.guarantee-explainer":
@@ -2233,9 +2235,9 @@
       "borrower.scan.national-id.row-surnames": "Apellidos",
       "borrower.scan.national-id.value-surnames": "SOTO MIRANDA",
       "borrower.scan.national-id.row-date-of-birth": "Fecha de nacimiento",
-      "borrower.scan.national-id.value-date-of-birth": "22-05-1990",
+      "borrower.scan.national-id.value-date-of-birth": "22/05/1990",
       "borrower.scan.national-id.row-expiry": "Vencimiento",
-      "borrower.scan.national-id.value-expiry": "14-11-2029",
+      "borrower.scan.national-id.value-expiry": "14/11/2029",
 
       "borrower.scan.payslips.org": "CONSTRUCTORA ANDES SpA",
       "borrower.scan.payslips.title": "Liquidación de remuneraciones — julio 2026",
@@ -2257,7 +2259,7 @@
       "borrower.scan.employment-tenure.row-role": "Cargo",
       "borrower.scan.employment-tenure.value-role": "Analista senior",
       "borrower.scan.employment-tenure.row-contract-start": "Inicio de contrato",
-      "borrower.scan.employment-tenure.value-contract-start": "01-06-2022",
+      "borrower.scan.employment-tenure.value-contract-start": "01/06/2022",
       "borrower.scan.employment-tenure.row-contract-type": "Tipo de contrato",
       "borrower.scan.employment-tenure.value-contract-type": "Indefinido",
 
@@ -2282,7 +2284,7 @@
       "borrower.scan.tax-folder.row-periods": "Períodos",
       "borrower.scan.tax-folder.value-periods": "12",
       "borrower.scan.tax-folder.row-issue-date": "Fecha de emisión",
-      "borrower.scan.tax-folder.value-issue-date": "02-08-2026",
+      "borrower.scan.tax-folder.value-issue-date": "02/08/2026",
       "borrower.scan.tax-folder.row-purpose": "Finalidad",
       "borrower.scan.tax-folder.value-purpose": "Fines crediticios",
 
@@ -2304,7 +2306,7 @@
       "borrower.scan.purchase-promise.row-price": "Precio",
       "borrower.scan.purchase-promise.value-price": "UF 3.500",
       "borrower.scan.purchase-promise.row-signature-date": "Fecha de firma",
-      "borrower.scan.purchase-promise.value-signature-date": "12-03-2026",
+      "borrower.scan.purchase-promise.value-signature-date": "12/03/2026",
 
       "borrower.scan.first-home-affidavit.org": "Declaración jurada simple",
       "borrower.scan.first-home-affidavit.title": "Primera vivienda y ausencia de subsidio",
@@ -2315,7 +2317,7 @@
       "borrower.scan.first-home-affidavit.row-subject": "Materia",
       "borrower.scan.first-home-affidavit.value-subject": "Primera vivienda · sin subsidio previo",
       "borrower.scan.first-home-affidavit.row-signature": "Firma",
-      "borrower.scan.first-home-affidavit.value-signature": "Firmada 05-08-2026",
+      "borrower.scan.first-home-affidavit.value-signature": "Firmada 05/08/2026",
 
       "borrower.scan.title-certificate.org": "Conservador de Bienes Raíces de Santiago",
       "borrower.scan.title-certificate.title": "Certificado de dominio vigente",
@@ -2324,10 +2326,10 @@
       "borrower.scan.title-certificate.row-tax-roll": "Rol de avalúo",
       "borrower.scan.title-certificate.value-tax-roll": "1234-56",
       "borrower.scan.title-certificate.row-registration": "Inscripción",
-      "borrower.scan.title-certificate.value-registration": "Fojas 5.120 N°3.410 (2026)",
+      "borrower.scan.title-certificate.value-registration": "Fojas 5.120 N° 3.410 (2026)",
       "borrower.scan.title-certificate.row-encumbrances": "Gravámenes",
       "borrower.scan.title-certificate.value-encumbrances":
-        "Hipoteca a favor de otro banco — Fojas 1.842 N°1.190 (2024)",
+        "Hipoteca a favor de otro banco — Fojas 1.842 N° 1.190 (2024)",
 
       "borrower.drawer.no-history": "Todavía no has subido nada para este documento.",
 
@@ -2337,7 +2339,7 @@
       "borrower.banner.accepted.title": "Documento aceptado",
       "borrower.banner.accepted.body":
         "Todos los campos coinciden con lo que declaraste en tu solicitud.",
-      "borrower.banner.rejected.title": "Encontramos {count} discrepancias",
+      "borrower.banner.rejected.title": "Encontramos {count} discrepancia(s)",
       "borrower.banner.rejected.body": "Sube el documento correcto para avanzar con este ítem.",
       "borrower.banner.incomplete.title": "Falta 1 dato por confirmar",
       "borrower.banner.incomplete.body":
@@ -2363,13 +2365,13 @@
       "borrower.chat.sent": "Mensaje enviado. Un especialista lo tomará.",
 
       "borrower.assistant.reply-specialist":
-        "Un especialista hipotecario tiene este documento y lo está revisando con el certificado del Conservador. No necesitamos nada de ti — te escribo por acá apenas haya respuesta. 🔍",
+        "Un especialista hipotecario tiene este documento y lo está revisando con el certificado del Conservador. No necesitamos nada de ti — te escribo por aquí apenas haya respuesta. 🔍",
       "borrower.assistant.reply-rejected":
-        "Solo necesitamos la página 1 completa, con el RUT legible en el margen derecho. Mándala cuando te acomode y la reviso al tiro. 📄",
+        "Solo necesitamos la página 1 completa, con el RUT legible en el margen derecho. Mándala cuando te acomode y la reviso de inmediato. 📄",
       "borrower.assistant.reply-accepted":
-        "Ese ya está aceptado, así que no queda nada por hacer ahí. Le pasé tu comentario al equipo y te responden por acá. 👍",
+        "Ese ya está aceptado, así que no queda nada por hacer ahí. Le transmití tu comentario al equipo y te responden por aquí. 👍",
       "borrower.assistant.reply-ack":
-        "Gracias, Javiera — se lo pasé al equipo hipotecario y quedó en tu expediente. Te responden por acá. 💬",
+        "Gracias, Javiera — lo transmití al equipo hipotecario y quedó en tu expediente. Te responden por aquí. 💬",
       "borrower.assistant.reply-escalated":
         "Tu expediente está con un especialista hipotecario y no ha dejado de avanzar. Agregué tu mensaje al caso para que lo vean junto con todo lo demás. 🙌",
       "borrower.chat.received":
@@ -2383,7 +2385,7 @@
       "borrower.msg.greeting":
         "¡Hola Javiera! 👋 Soy el asistente hipotecario de Banco Falabella. Recibimos tu solicitud {case} para {property} con la garantía estatal FOGAES.",
       "borrower.msg.guide":
-        "Te voy a guiar por acá hasta completar tu expediente. Son 9 documentos; te los voy a pedir de a uno y te explico para qué sirve cada uno. Puedes responder con una foto o un PDF — si algo no calza, te aviso al tiro.",
+        "Te voy a guiar por aquí hasta completar tu expediente. Son 9 documentos; te los voy a pedir uno por uno y te explico para qué sirve cada uno. Puedes responder con una foto o un PDF — si algo no coincide, te aviso de inmediato.",
       "borrower.msg.doc1-request":
         "*1 de 9 — Cédula de Identidad (ambos lados)*\nLa usamos para verificar tu identidad con el Registro Civil antes de la evaluación.",
       "borrower.msg.doc1-verified":
@@ -2392,7 +2394,7 @@
         "*2 de 9 — Tus 3 últimas liquidaciones de sueldo*\nLas usamos para calcular tu renta líquida promedio y la relación dividendo/renta.",
       "borrower.msg.here-you-go": "Aquí van 👇",
       "borrower.msg.doc2-wrong-document":
-        "⚠️ *Esto no es una liquidación de sueldo.* Es tu certificado de cotizaciones AFP.\n\nIgual lo necesitamos más adelante (documento 4), así que lo guardé y lo marqué como recibido. 👍\n\nPara este paso necesito las liquidaciones de *mayo, junio y julio 2026*: el documento que emite tu empleador con el sueldo bruto, los descuentos y el líquido.",
+        "⚠️ *Esto no es una liquidación de sueldo.* Es tu certificado de cotizaciones AFP.\n\nDe todos modos lo necesitamos más adelante (documento 4), así que lo guardé y lo marqué como recibido. 👍\n\nPara este paso necesito las liquidaciones de *mayo, junio y julio 2026*: el documento que emite tu empleador con el sueldo bruto, los descuentos y el líquido a pagar.",
       "borrower.msg.sorry-here-they-are": "Ah, perdón. Aquí están.",
       "borrower.msg.doc2-verified":
         "✅ *Las 3 liquidaciones recibidas* (mayo, junio y julio 2026).\nRenta líquida promedio: *{income}*. Tu dividendo estimado de {payment} es *{ratio}* de tu renta — dentro de la política del banco (máx. {cap}).",
@@ -2401,23 +2403,23 @@
       "borrower.msg.doc3-verified":
         "✅ *Antigüedad confirmada:* 4 años 2 meses, contrato indefinido.",
       "borrower.msg.doc4-already-covered":
-        "*4 de 9 — Cotizaciones AFP últimos 12 meses*\n✅ Ya está cubierto: es el certificado que me mandaste antes. 12 meses continuos, sin lagunas. Uno menos que enviar. 🙂",
+        "*4 de 9 — Cotizaciones AFP últimos 12 meses*\n✅ Ya está cubierto: es el certificado que me mandaste antes. 12 meses continuos, sin lagunas. Un documento menos que enviar. 🙂",
       "borrower.msg.doc5-request":
-        "*5 de 9 — Carpeta Tributaria para fines crediticios*\nLa descargas en sii.cl. Ojo: tiene que ser la versión “para solicitar créditos”, no la personal.",
+        "*5 de 9 — Carpeta Tributaria para fines crediticios*\nLa descargas en sii.cl. Importante: tiene que ser la versión “para solicitar créditos”, no la personal.",
       "borrower.msg.doc5-incomplete":
-        "⚠️ *El documento es el correcto, pero falta un dato.*\nEn la página 1 tu RUT sale cortado: se lee *18.452.30_-4* y no puedo confirmar el dígito que falta.\n\n¿Me reenvías solo la página 1 completa? El resto está perfecto: 12 períodos, emitida el 02-08-2026, para fines crediticios. ✔️",
+        "⚠️ *El documento es el correcto, pero falta un dato.*\nEn la página 1 tu RUT aparece cortado: se lee *18.452.30_-4* y no puedo confirmar el dígito que falta.\n\n¿Me reenvías solo la página 1 completa? El resto está conforme: 12 períodos, emitida el 02/08/2026, para fines crediticios. ✔️",
       "borrower.msg.will-resend-later":
-        "Ya, la vuelvo a descargar del SII y te la mando más rato.",
+        "De acuerdo, la vuelvo a descargar del SII y te la mando más tarde.",
       "borrower.msg.doc5-left-open":
-        "Perfecto. Te dejo el ítem abierto en tu portal — puedes subir la página 1 ahí cuando quieras, sin volver a este chat. Sigamos. 👍",
+        "Perfecto. Te dejo el ítem abierto en tu portal — puedes subir la página 1 ahí cuando quieras, sin volver a esta conversación. Sigamos. 👍",
       "borrower.msg.doc6-request":
         "*6 de 9 — Acreditación del pie*\nLa cartola de tu cuenta de ahorro confirma el pie de {downPayment}.",
       "borrower.msg.doc6-verified":
         "✅ *Fondos confirmados:* $15.100.000 disponibles, por sobre los {downPayment} requeridos.",
       "borrower.msg.doc7-request":
-        "*7 de 9 — Promesa de compraventa* 🏛️ FOGAES\nEste es el documento clave para el beneficio: para FOGAES la promesa debe estar firmada el 01-01-2025 o después.",
+        "*7 de 9 — Promesa de compraventa* 🏛️ FOGAES\nEste es el documento clave para el beneficio: para FOGAES la promesa debe estar firmada el 01/01/2025 o después.",
       "borrower.msg.doc7-verified":
-        "✅ *Promesa firmada el 12-03-2026* — cumple el requisito FOGAES.\nPrecio {property}, vivienda nueva (primera venta), Inmobiliaria Aconcagua. Tu subsidio de tasa de 0,60 puntos queda confirmado.",
+        "✅ *Promesa firmada el 12/03/2026* — cumple el requisito FOGAES.\nPrecio {property}, vivienda nueva (primera venta), Inmobiliaria Aconcagua. Tu subsidio de tasa de 0,60 puntos queda confirmado.",
       "borrower.msg.doc8-request":
         "*8 de 9 — Declaración jurada de primera vivienda* 🏛️\nCuando simulaste ya consultamos en línea el Registro de Deudores de Pensiones de Alimentos y tus registros en el MINVU, así que no necesitas pedir esos certificados. Solo firma la declaración que te dejé prellenada y devuélvemela.",
       "borrower.msg.doc8-verified":
@@ -2425,11 +2427,11 @@
       "borrower.msg.doc9-request":
         "*9 de 9 — Certificado de dominio vigente*\nEmitido por el Conservador de Bienes Raíces. El último. 🙌",
       "borrower.msg.doc9-exception":
-        "Gracias, Javiera. Acá necesito detenerme. 🔍\n\n*Tu certificado de dominio muestra una hipoteca de otro banco* inscrita sobre la propiedad, que no venía en la solicitud. Esto lo revisa un especialista hipotecario. Ya se lo derivé con el documento y los datos de inscripción (Fojas 1.842 N°1.190, 2024).",
+        "Gracias, Javiera. En este punto necesito detenerme. 🔍\n\n*Tu certificado de dominio registra una hipoteca de otro banco* inscrita sobre la propiedad, que no fue declarada en la solicitud. Esto lo revisa un especialista hipotecario. Ya se lo derivé con el documento y los datos de inscripción (Fojas 1.842 N° 1.190, 2024).",
       "borrower.msg.doc9-no-hold":
         "No detiene tu evaluación: tu expediente ya pasó a evaluación crediticia. Volvemos con la respuesta y no hay nada que tengas que hacer en este ítem.",
       "borrower.msg.open-items":
-        "Tienes *2 ítems abiertos* en el portal:\n\n• *Carpeta Tributaria* — falta la página 1 con el RUT completo. La puedes subir tú desde el portal.\n• *Certificado de dominio* — lo está revisando un especialista, no tienes que hacer nada.\n\nEn el portal puedes abrir cada documento y ver exactamente qué marcamos. 👀",
+        "Tienes *2 ítems abiertos* en el portal:\n\n• *Carpeta Tributaria* — falta la página 1 con el RUT completo. La puedes subir tú desde el portal.\n• *Certificado de dominio* — lo está revisando un especialista, no tienes que hacer nada.\n\nEn el portal puedes abrir cada documento y ver exactamente qué observamos. 👀",
 
       "borrower.feed.doc1-accepted": "Cédula verificada · el RUT coincide",
       "borrower.feed.doc2-rejected":
@@ -2442,7 +2444,7 @@
       "borrower.feed.doc5-incomplete": "Carpeta Tributaria incompleta: RUT ilegible en la página 1",
       "borrower.feed.doc6-accepted": "Pie confirmado · $15.100.000 disponibles",
       "borrower.feed.doc7-accepted":
-        "Promesa verificada · firmada el 12-03-2026 · cumple FOGAES",
+        "Promesa verificada · firmada el 12/03/2026 · cumple FOGAES",
       "borrower.feed.doc8-accepted":
         "Requisitos FOGAES confirmados · garantía estatal activa",
       "borrower.feed.doc9-escalated":
