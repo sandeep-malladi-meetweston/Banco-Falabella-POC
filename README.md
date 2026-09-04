@@ -1,4 +1,4 @@
-# Banco Falabella mortgage demo — English portal
+# Weston mortgage demo — English portal
 
 Two surfaces over one mortgage case, `H-2026-08415`. No build step, no dependencies, no server:
 open the file in a browser.
@@ -6,8 +6,8 @@ open the file in a browser.
 ```
 borrower.html   →  start here. Javiera's side. It plays itself.
 lender.html     →  Carolina's side. It waits for you.
-assets/         →  copy.js (every string), falabella-credit.js (every number),
-                   falabella-workspace.js (the state engine both pages share)
+assets/         →  copy.js (every string), weston-credit.js (every number),
+                   weston-workspace.js (the state engine both pages share)
 tests/          →  node --test "portal-en/tests/*.test.mjs"
 DESIGN.md       →  why it is shaped this way
 ```
@@ -138,7 +138,7 @@ The Audit tab has the whole trail, newest first, with actor and source.
 
 **Real** — it is computed or driven by your click, and behaves the same whatever order you take it in:
 
-- Every figure. `assets/falabella-credit.js` owns the constants and the payment function; neither
+- Every figure. `assets/weston-credit.js` owns the constants and the payment function; neither
   page hardcodes a derived number. Payment, DTI, the stressed DTI, the guaranteed tranche and the
   metric tiles are all arithmetic.
 - The state machine. Nine documents, five verdicts, four review reasons, two conditions, six
@@ -206,7 +206,7 @@ Zero dependencies, no browser, no network. The pages' pure functions are exercis
 - **Deep links.** `lender.html?case=H-2026-08415` opens the case workspace directly; `&take=1` also
   announces the assignment. The drawer's own state is in the hash:
   `#case=H-2026-08415&mode=full&tab=risk`.
-- **Language.** English only. Every user-visible string resolves through `FalabellaCopy.t()`, so
+- **Language.** English only. Every user-visible string resolves through `WestonCopy.t()`, so
   Spanish is added by filling one object in `assets/copy.js` — never by touching markup or logic.
   The language control in the borrower topbar is present and functional with one locale registered.
 

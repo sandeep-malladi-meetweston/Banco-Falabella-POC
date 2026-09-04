@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Banco Falabella</title>
+  <title>Weston</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=Public+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
@@ -14,7 +14,7 @@
        Javiera is told one thing at a time. Local font fallbacks are mandatory: the
        demo must survive being opened with no network. */
     :root{
-      /* Banco Falabella — from logo-bf-vertical.svg */
+      /* Weston — from logo-weston.svg */
       --brand:#007a33;--brand-lime:#c3d600;--brand-deep:#154734;--brand-wash:#eff8f2;--brand-rule:#bfe0cc;
       /* Silver Hill structural neutrals — verbatim */
       --ink:#18212b;--slate:#52606d;--muted:#7b8794;--paper:#fff;--shell:#f3f5f7;--rule:#dbe1e7;--ok:#137a4a;--danger:#b42318;--warn:#8a5a00;
@@ -466,10 +466,10 @@
   <div id="borrower-app"></div>
   <div id="borrower-status" role="status" aria-live="polite"></div>
   <script src="assets/copy.js"></script>
-  <script src="assets/falabella-credit.js"></script>
-  <script src="assets/falabella-workspace.js"></script>
+  <script src="assets/weston-credit.js"></script>
+  <script src="assets/weston-workspace.js"></script>
   <script>
-    /* Banco Falabella English portal — the borrower surface.
+    /* Weston English portal — the borrower surface.
      *
      * This is the Spanish demo's narrative, rebuilt. Nothing about the
      * experience changes: it plays itself, it speaks to Javiera in the second
@@ -478,8 +478,8 @@
      *
      * What changes is the engineering. The story is one flat SCRIPT array of
      * steps read by one interpreter, so the narrative can be edited without
-     * touching the engine. Every number comes from FalabellaCredit, every string
-     * from FalabellaCopy, every state change from FalabellaWorkspace, and every
+     * touching the engine. Every number comes from WestonCredit, every string
+     * from WestonCopy, every state change from WestonWorkspace, and every
      * delay from the injectable `later` seam — so the suite drives the whole
      * narrative synchronously and never waits on real time.
      *
@@ -490,9 +490,9 @@
     "use strict";
 
     (function () {
-      var copy = globalThis.FalabellaCopy;
-      var credit = globalThis.FalabellaCredit;
-      var workspace = globalThis.FalabellaWorkspace;
+      var copy = globalThis.WestonCopy;
+      var credit = globalThis.WestonCredit;
+      var workspace = globalThis.WestonWorkspace;
 
       var CASE_ID = "H-2026-08415";
 
@@ -515,7 +515,7 @@
 
       /* ============================================================= locale */
 
-      /* The switched-on locale lives in the copy layer, which falabella-credit.js
+      /* The switched-on locale lives in the copy layer, which weston-credit.js
          also reads for its numbers and dates — so one change moves every string
          and every figure on the page at once. Session storage carries the choice
          across the role switch, so the lender surface opens in the same
@@ -701,7 +701,7 @@
         return isFinite(parsed) && parsed > 0 ? parsed : null;
       }
 
-      /* What the form has answered so far, as options for FalabellaCredit. An
+      /* What the form has answered so far, as options for WestonCredit. An
          unanswered field falls back to the reference simulation rather than to
          zero, so the rail always shows a coherent loan rather than NaN. */
       function formOptions(form) {
@@ -848,7 +848,7 @@
       /**
        * The parameter sets the narrative's sentences interpolate. Steps name one
        * by id — a string, so a step stays data — and the interpreter resolves it
-       * against FalabellaCredit at the moment the step plays.
+       * against WestonCredit at the moment the step plays.
        */
       var PARAM_SETS = {
         "case-property": function (f) {
@@ -2187,7 +2187,7 @@
        * a list of findings with no document attached asks her to take the
        * bank's word for it.
        *
-       * The shape of the page is `FalabellaWorkspace.SCAN_ROWS`, and the one
+       * The shape of the page is `WestonWorkspace.SCAN_ROWS`, and the one
        * document whose page changes — the tax folder's first scan cropped the
        * right margin, so its RUT is short a digit until she re-sends it — is
        * `SCAN_OVERRIDES`. Both live in the shared module because the lender's
@@ -2568,7 +2568,7 @@
       function renderTopbar(viewState) {
         return (
           '<header class="topbar">' +
-          '<img class="topbar-logo" src="assets/logo-bf-inverse.svg" alt="' +
+          '<img class="topbar-logo" src="assets/logo-weston-inverse.svg" alt="' +
           text("common.brand-name") +
           '">' +
           '<span class="portal-label">' +
@@ -2698,7 +2698,7 @@
         );
       }
 
-      /* The simulation. Every figure below is FalabellaCredit's; this function
+      /* The simulation. Every figure below is WestonCredit's; this function
          only decides where they sit on the page — the form on the left as she
          answered it, and what the bank made of it on the right, checking itself
          as the narrative plays. */
@@ -4787,7 +4787,7 @@
 
       /* ================================================================== api */
 
-      globalThis.FalabellaBorrower = {
+      globalThis.WestonBorrower = {
         CASE_ID: CASE_ID,
         CASE_STORAGE_KEY: CASE_STORAGE_KEY,
         VIEW_STORAGE_KEY: VIEW_STORAGE_KEY,

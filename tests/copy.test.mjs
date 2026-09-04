@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { loadScriptApi } from "./page-test-helpers.mjs";
 
-const { api: copy, source } = loadScriptApi("assets/copy.js", "FalabellaCopy");
+const { api: copy, source } = loadScriptApi("assets/copy.js", "WestonCopy");
 const en = copy.COPY.en;
 const keys = Object.keys(en);
 
@@ -77,7 +77,7 @@ test("the active locale is switchable, refuses an unknown one, and drives t", ()
 });
 
 test("copy.js names the single place a locale is added", () => {
-  assert.match(source, /globalThis\.FalabellaCopy/);
+  assert.match(source, /globalThis\.WestonCopy/);
   assert.match(source, /\/[/*][^\n]*Spanish/i);
 });
 

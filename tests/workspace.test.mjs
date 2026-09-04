@@ -5,7 +5,7 @@ import { loadScriptApi } from "./page-test-helpers.mjs";
 /* The engine is DOM-free and dependency-free: it loads on its own, with no copy
    layer and no credit module in the context. Nothing it stores is English prose
    it invented — user-visible labels are copy keys the renderer resolves. */
-const { api: ws } = loadScriptApi("assets/falabella-workspace.js", "FalabellaWorkspace");
+const { api: ws } = loadScriptApi("assets/weston-workspace.js", "WestonWorkspace");
 
 /* Values crossing out of the vm realm carry that realm's prototypes, so a
    strict deepEqual against a test-realm literal fails on the prototype alone.
@@ -682,7 +682,7 @@ test("no transition mutates the state it was given", () => {
 });
 
 test("the module holds no clock and no randomness in its source", () => {
-  const { source } = loadScriptApi("assets/falabella-workspace.js", "FalabellaWorkspace");
+  const { source } = loadScriptApi("assets/weston-workspace.js", "WestonWorkspace");
   assert.equal(/Date\.now|Math\.random/.test(source), false);
   assert.equal(/\bwindow\b|getElementById|addEventListener/.test(source), false);
 });

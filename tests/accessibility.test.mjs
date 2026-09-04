@@ -22,13 +22,13 @@ import { loadPageApi, readPage } from "./page-test-helpers.mjs";
  * checked — including the rule that lime is a border and a fill colour and never
  * a text colour, which is the one contrast failure a stylesheet can state. */
 
-const lenderPage = loadPageApi("lender.html", "FalabellaLender");
-const borrowerPage = loadPageApi("borrower.html", "FalabellaBorrower");
+const lenderPage = loadPageApi("lender.html", "WestonLender");
+const borrowerPage = loadPageApi("borrower.html", "WestonBorrower");
 
 const lender = lenderPage.api;
 const borrower = borrowerPage.api;
-const workspace = lenderPage.context.FalabellaWorkspace;
-const copy = lenderPage.context.FalabellaCopy;
+const workspace = lenderPage.context.WestonWorkspace;
+const copy = lenderPage.context.WestonCopy;
 const copySource = readPage("assets/copy.js");
 
 const plain = value => JSON.parse(JSON.stringify(value));

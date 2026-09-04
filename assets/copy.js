@@ -1,7 +1,7 @@
-/* Banco Falabella English portal — the copy layer.
+/* Weston English portal — the copy layer.
  *
  * Every user-visible string on borrower.html and lender.html resolves through
- * FalabellaCopy.t(). No page markup or render function may hold English text.
+ * WestonCopy.t(). No page markup or render function may hold English text.
  *
  * ADDING SPANISH: this file is the only place it happens. Append "es" to
  * LOCALES, add "es" to NUMBER_LOCALE ("es-CL"), and add a COPY.es object with
@@ -15,7 +15,7 @@
   var COPY = {
     en: {
       /* ============================================================ common */
-      "common.brand-name": "Banco Falabella",
+      "common.brand-name": "Weston",
       "common.close": "Close",
       "common.cancel": "Cancel",
       "common.send": "Send",
@@ -158,8 +158,8 @@
 
       /* ============================================================ lender */
       "lender.title": "Lender portal",
-      "lender.page-title": "Banco Falabella · Lender portal",
-      "lender.logo-alt": "Banco Falabella",
+      "lender.page-title": "Weston · Lender portal",
+      "lender.logo-alt": "Weston",
       "lender.logo-reset-aria": "Clear all filters and show every case",
       "lender.search-label": "Search case, borrower or address",
       "lender.search-placeholder": "Search case, borrower or address",
@@ -559,7 +559,7 @@
       "lender.email.subject":
         "Case {case} · Mortgage at Folio 1,842 No.1,190 (2024) · tax roll 1234-56",
       "lender.email.body":
-        "Dear Inmobiliaria Aconcagua team,\n\nWe are assessing a mortgage application over the property at tax roll 1234-56 of the Aconcagua project in Maipú, case {case}.\n\nThe current title certificate records a mortgage in favour of another bank at Folio 1,842 No.1,190 of 2024, which was not declared in the application. Please confirm whether it corresponds to the construction loan and whether it will be released simultaneously in the same deed, and attach the draft release if so.\n\nKind regards,\n{officer} · {role} · Banco Falabella",
+        "Dear Inmobiliaria Aconcagua team,\n\nWe are assessing a mortgage application over the property at tax roll 1234-56 of the Aconcagua project in Maipú, case {case}.\n\nThe current title certificate records a mortgage in favour of another bank at Folio 1,842 No.1,190 of 2024, which was not declared in the application. Please confirm whether it corresponds to the construction loan and whether it will be released simultaneously in the same deed, and attach the draft release if so.\n\nKind regards,\n{officer} · {role} · Weston",
       "lender.email.send": "Send query",
       "lender.email.sent-announcement":
         "Query sent to the developer. Waiting for their reply.",
@@ -766,7 +766,7 @@
       "lender.officer.name": "Carolina Reyes",
       "lender.officer.role": "Mortgage officer, Santiago desk",
       "lender.officer.authority": "UF 4,000 with FOGAES",
-      "lender.team.name": "Banco Falabella mortgage team",
+      "lender.team.name": "Weston mortgage team",
 
       /* Announcements */
       "lender.status.board-ready": "Portfolio board ready. {count} cases.",
@@ -839,7 +839,7 @@
 
       /* ========================================================== borrower */
       "borrower.title": "Borrower portal",
-      "borrower.page-title": "Banco Falabella · Home loan application",
+      "borrower.page-title": "Weston · Home loan application",
       "borrower.crumb": "Home Loan · Online application",
       "borrower.who": "Borrower",
       "borrower.switch-to-lender": "Switch to lender view",
@@ -1123,7 +1123,7 @@
       "borrower.scan.tax-folder.row-purpose": "Purpose",
       "borrower.scan.tax-folder.value-purpose": "Credit purposes",
 
-      "borrower.scan.down-payment-proof.org": "BANCO FALABELLA",
+      "borrower.scan.down-payment-proof.org": "WESTON",
       "borrower.scan.down-payment-proof.title": "Savings account statement — July 2026",
       "borrower.scan.down-payment-proof.row-holder": "Account holder",
       "borrower.scan.down-payment-proof.value-holder": "JAVIERA SOTO MIRANDA",
@@ -1187,14 +1187,14 @@
       "borrower.tag.note": "Note",
 
       /* Chat */
-      "borrower.chat.assistant-name": "Banco Falabella mortgage assistant",
+      "borrower.chat.assistant-name": "Weston mortgage assistant",
       "borrower.chat.online": "online · mortgage assistant",
       "borrower.chat.typing": "typing…",
       "borrower.chat.placeholder": "Type a message",
       "borrower.chat.today": "TODAY",
       "borrower.chat.send": "Send",
       "borrower.chat.you": "You",
-      "borrower.chat.team-name": "Banco Falabella mortgage team",
+      "borrower.chat.team-name": "Weston mortgage team",
       "borrower.chat.blank": "Type a message before sending it.",
       "borrower.chat.sent": "Message sent. A specialist will pick it up.",
 
@@ -1215,7 +1215,7 @@
       "borrower.assistant.reply-escalated":
         "Your file is with a mortgage specialist and hasn't stopped moving. I've added your message to the case so they see it with everything else. 🙌",
       "borrower.chat.received":
-        "The Banco Falabella mortgage team has replied. New messages: {count}.",
+        "The Weston mortgage team has replied. New messages: {count}.",
       "borrower.chat.fab": "Questions on WhatsApp",
       "borrower.notice.escalated-title": "This item is with a specialist",
       "borrower.notice.escalated-body":
@@ -1223,7 +1223,7 @@
 
       /* Scripted narrative — the assistant thread */
       "borrower.msg.greeting":
-        "Hi Javiera! 👋 I’m the Banco Falabella mortgage assistant. We received your application {case} for {property} with the FOGAES state guarantee.",
+        "Hi Javiera! 👋 I’m the Weston mortgage assistant. We received your application {case} for {property} with the FOGAES state guarantee.",
       "borrower.msg.guide":
         "I’ll guide you here until your file is complete. There are 9 documents; I’ll ask for them one at a time and explain what each is for. You can reply with a photo or a PDF — if something doesn’t match, I’ll tell you right away.",
       "borrower.msg.doc1-request":
@@ -1327,7 +1327,7 @@
      */
     es: {
       /* ============================================================ common */
-      "common.brand-name": "Banco Falabella",
+      "common.brand-name": "Weston",
       "common.close": "Cerrar",
       "common.cancel": "Cancelar",
       "common.send": "Enviar",
@@ -1465,8 +1465,8 @@
 
       /* ============================================================ lender */
       "lender.title": "Portal del ejecutivo",
-      "lender.page-title": "Banco Falabella · Portal del ejecutivo",
-      "lender.logo-alt": "Banco Falabella",
+      "lender.page-title": "Weston · Portal del ejecutivo",
+      "lender.logo-alt": "Weston",
       "lender.logo-reset-aria": "Quitar todos los filtros y mostrar todos los casos",
       "lender.search-label": "Buscar caso, solicitante o dirección",
       "lender.search-placeholder": "Buscar caso, solicitante o dirección",
@@ -1818,7 +1818,7 @@
       "lender.email.subject":
         "Caso {case} · Hipoteca en Fojas 1.842 N° 1.190 (2024) · rol de avalúo 1234-56",
       "lender.email.body":
-        "Estimados señores:\n\nJunto con saludar, informamos que nos encontramos evaluando una solicitud de crédito hipotecario sobre la propiedad del rol de avalúo 1234-56 del proyecto Aconcagua en Maipú, caso {case}.\n\nEl certificado de dominio vigente registra una hipoteca a favor de otro banco en Fojas 1.842 N° 1.190 del año 2024, que no fue declarada en la solicitud. Agradeceremos confirmar si corresponde al crédito constructor y si se alzará simultáneamente en la misma escritura, adjuntando el borrador de alzamiento en tal caso.\n\nAtentamente,\n{officer} · {role} · Banco Falabella",
+        "Estimados señores:\n\nJunto con saludar, informamos que nos encontramos evaluando una solicitud de crédito hipotecario sobre la propiedad del rol de avalúo 1234-56 del proyecto Aconcagua en Maipú, caso {case}.\n\nEl certificado de dominio vigente registra una hipoteca a favor de otro banco en Fojas 1.842 N° 1.190 del año 2024, que no fue declarada en la solicitud. Agradeceremos confirmar si corresponde al crédito constructor y si se alzará simultáneamente en la misma escritura, adjuntando el borrador de alzamiento en tal caso.\n\nAtentamente,\n{officer} · {role} · Weston",
       "lender.email.send": "Enviar consulta",
       "lender.email.sent-announcement":
         "Consulta enviada a la inmobiliaria. A la espera de su respuesta.",
@@ -1990,7 +1990,7 @@
       "lender.officer.name": "Carolina Reyes",
       "lender.officer.role": "Ejecutiva hipotecaria, mesa Santiago",
       "lender.officer.authority": "UF 4.000 con FOGAES",
-      "lender.team.name": "Equipo hipotecario Banco Falabella",
+      "lender.team.name": "Equipo hipotecario Weston",
 
       "lender.status.board-ready": "Tablero de cartera listo. {count} casos.",
       "lender.status.case-opened": "Caso {case} abierto.",
@@ -2057,7 +2057,7 @@
         "El subsidio de tasa de 0,60 puntos es un beneficio aparte del programa y ya está incorporado en la tasa.",
       /* ========================================================== borrower */
       "borrower.title": "Portal de la solicitante",
-      "borrower.page-title": "Banco Falabella · Solicitud de crédito hipotecario",
+      "borrower.page-title": "Weston · Solicitud de crédito hipotecario",
       "borrower.crumb": "Crédito Hipotecario · Solicitud en línea",
       "borrower.who": "Solicitante",
       "borrower.switch-to-lender": "Ver como ejecutivo",
@@ -2318,7 +2318,7 @@
       "borrower.scan.tax-folder.row-purpose": "Finalidad",
       "borrower.scan.tax-folder.value-purpose": "Fines crediticios",
 
-      "borrower.scan.down-payment-proof.org": "BANCO FALABELLA",
+      "borrower.scan.down-payment-proof.org": "WESTON",
       "borrower.scan.down-payment-proof.title": "Cartola cuenta de ahorro — julio 2026",
       "borrower.scan.down-payment-proof.row-holder": "Titular",
       "borrower.scan.down-payment-proof.value-holder": "JAVIERA SOTO MIRANDA",
@@ -2383,14 +2383,14 @@
       "borrower.tag.missing": "Falta dato",
       "borrower.tag.note": "Nota",
 
-      "borrower.chat.assistant-name": "Asistente hipotecario Banco Falabella",
+      "borrower.chat.assistant-name": "Asistente hipotecario Weston",
       "borrower.chat.online": "en línea · asistente hipotecario",
       "borrower.chat.typing": "escribiendo…",
       "borrower.chat.placeholder": "Escribe un mensaje",
       "borrower.chat.today": "HOY",
       "borrower.chat.send": "Enviar",
       "borrower.chat.you": "Tú",
-      "borrower.chat.team-name": "Equipo hipotecario Banco Falabella",
+      "borrower.chat.team-name": "Equipo hipotecario Weston",
       "borrower.chat.blank": "Escribe un mensaje antes de enviarlo.",
       "borrower.chat.sent": "Mensaje enviado. Un especialista lo tomará.",
 
@@ -2405,7 +2405,7 @@
       "borrower.assistant.reply-escalated":
         "Tu expediente está con un especialista hipotecario y no ha dejado de avanzar. Agregué tu mensaje al caso para que lo vean junto con todo lo demás. 🙌",
       "borrower.chat.received":
-        "El equipo hipotecario de Banco Falabella respondió. Mensajes nuevos: {count}.",
+        "El equipo hipotecario de Weston respondió. Mensajes nuevos: {count}.",
       "borrower.chat.fab": "Consultas por WhatsApp",
 
       "borrower.notice.escalated-title": "Este ítem está con un especialista",
@@ -2413,7 +2413,7 @@
         "Detectamos el gravamen en el certificado de dominio y un especialista hipotecario lo está revisando con el documento. No se espera nada de ti.",
 
       "borrower.msg.greeting":
-        "¡Hola Javiera! 👋 Soy el asistente hipotecario de Banco Falabella. Recibimos tu solicitud {case} para {property} con la garantía estatal FOGAES.",
+        "¡Hola Javiera! 👋 Soy el asistente hipotecario de Weston. Recibimos tu solicitud {case} para {property} con la garantía estatal FOGAES.",
       "borrower.msg.guide":
         "Te voy a guiar por aquí hasta completar tu expediente. Son 9 documentos; te los voy a pedir uno por uno y te explico para qué sirve cada uno. Puedes responder con una foto o un PDF — si algo no coincide, te aviso de inmediato.",
       "borrower.msg.doc1-request":
@@ -2515,7 +2515,7 @@
   /* ------------------------------------------------------- the active locale
    *
    * One switch for the whole demo. It lives here rather than on either page
-   * because both pages and falabella-credit.js have to agree: a Spanish page
+   * because both pages and weston-credit.js have to agree: a Spanish page
    * printing "UF 3,150" with an English thousands separator is worse than an
    * English page. numberLocale() reads it, so every formatUF / formatCLP /
    * formatDate call already in the pages follows the switch with no change at
@@ -2566,7 +2566,7 @@
     });
   }
 
-  globalThis.FalabellaCopy = {
+  globalThis.WestonCopy = {
     DEFAULT_LOCALE: DEFAULT_LOCALE,
     LOCALES: LOCALES,
     NUMBER_LOCALE: NUMBER_LOCALE,

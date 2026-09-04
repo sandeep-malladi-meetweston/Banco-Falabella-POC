@@ -2,13 +2,13 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { loadPageApi } from "./page-test-helpers.mjs";
 
-/* The page is loaded the way a browser loads it: copy.js, falabella-credit.js and
-   falabella-workspace.js in order, then the inline script, all in one vm context
+/* The page is loaded the way a browser loads it: copy.js, weston-credit.js and
+   weston-workspace.js in order, then the inline script, all in one vm context
    with no document — so init() must stay guarded and the model must be pure. */
-const { api: lender, context, html } = loadPageApi("lender.html", "FalabellaLender");
-const workspace = context.FalabellaWorkspace;
-const credit = context.FalabellaCredit;
-const copy = context.FalabellaCopy;
+const { api: lender, context, html } = loadPageApi("lender.html", "WestonLender");
+const workspace = context.WestonWorkspace;
+const credit = context.WestonCredit;
+const copy = context.WestonCopy;
 
 /* Values crossing out of the vm realm carry that realm's prototypes, so anything
    compared against a test-realm literal goes through plain() first. */
@@ -361,7 +361,7 @@ test("grouping keeps all six stage keys, including the empty columns", () => {
 
 /* ========================================================= the live case */
 
-test("FALLBACK_CASE is the case of spec §3, with every figure from FalabellaCredit", () => {
+test("FALLBACK_CASE is the case of spec §3, with every figure from WestonCredit", () => {
   const fallback = plain(lender.FALLBACK_CASE);
   assert.equal(fallback.caseId, "H-2026-08415");
   assert.equal(fallback.borrower.fullName, "Javiera Soto Miranda");
@@ -461,7 +461,7 @@ test("the model is exposed whole and the page never runs init() without a docume
     "sortLoans",
     "groupLoansByStage"
   ]) {
-    assert.ok(lender[name], `FalabellaLender.${name} is missing`);
+    assert.ok(lender[name], `WestonLender.${name} is missing`);
   }
   /* The suite has just loaded the page with no document in the context: an
      unguarded init() would have thrown before the global was ever exposed. */

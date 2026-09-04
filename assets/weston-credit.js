@@ -1,4 +1,4 @@
-/* Banco Falabella English portal — the credit arithmetic.
+/* Weston English portal — the credit arithmetic.
  *
  * This file owns every derived number in the demo. Both surfaces call it and
  * neither holds a figure of its own. That is the whole point: DISENO.md §2 of
@@ -12,7 +12,7 @@
  * CUPO_UF) — so the English portal computes the same case.
  *
  * DOM-free and dependency-free. Formatters take their locale from
- * FalabellaCopy.NUMBER_LOCALE when the copy layer is loaded and fall back to
+ * WestonCopy.NUMBER_LOCALE when the copy layer is loaded and fall back to
  * en-US when it is not, so this module is testable on its own.
  */
 "use strict";
@@ -55,7 +55,7 @@
   /* Read at call time, not at load time: the copy layer may load after this
      one, and a locale switch must be picked up without a reload. */
   function numberLocale(locale) {
-    var copy = globalThis.FalabellaCopy;
+    var copy = globalThis.WestonCopy;
     if (!copy) return DEFAULT_NUMBER_LOCALE;
     var key = locale || (copy.locale ? copy.locale() : copy.DEFAULT_LOCALE);
     var table = copy.NUMBER_LOCALE || {};
@@ -289,7 +289,7 @@
 
   /* =================================================================== api */
 
-  globalThis.FalabellaCredit = {
+  globalThis.WestonCredit = {
     UF_VALUE: UF_VALUE,
     UF_DATE: UF_DATE,
     PROPERTY_UF: PROPERTY_UF,

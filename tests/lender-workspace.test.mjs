@@ -6,10 +6,10 @@ import { loadPageApi } from "./page-test-helpers.mjs";
    one vm context, no document. The drawer's render functions are pure string
    builders and its actions are pure over (state, options), so nothing here needs
    a browser — and nothing here waits on real time. */
-const { api: lender, context, html } = loadPageApi("lender.html", "FalabellaLender");
-const workspace = context.FalabellaWorkspace;
-const credit = context.FalabellaCredit;
-const copy = context.FalabellaCopy;
+const { api: lender, context, html } = loadPageApi("lender.html", "WestonLender");
+const workspace = context.WestonWorkspace;
+const credit = context.WestonCredit;
+const copy = context.WestonCopy;
 
 /* Values crossing out of the vm realm carry that realm's prototypes. */
 const plain = value => JSON.parse(JSON.stringify(value));
@@ -633,7 +633,7 @@ test("the risk tab puts 24.7% under the 30% cap", () => {
     )
   );
   assert.ok(markup.includes("$592,218"));
-  /* The credit summary is there too, every figure from FalabellaCredit. */
+  /* The credit summary is there too, every figure from WestonCredit. */
   assert.ok(markup.includes(shown("risk.summary-heading")));
   assert.ok(markup.includes(lender.escapeHtml(credit.formatUF(figures.loanUF))));
   assert.ok(markup.includes(lender.escapeHtml(credit.formatUF(figures.paymentUF, 2))));
@@ -1258,7 +1258,7 @@ test("the page exposes Task 6's functions and wires the drawer's own events", ()
     "later",
     "setLater"
   ]) {
-    assert.equal(typeof lender[name], "function", `FalabellaLender.${name} is missing`);
+    assert.equal(typeof lender[name], "function", `WestonLender.${name} is missing`);
   }
   /* Escape, the focus trap, the body scroll lock and the focus return (§5.5). */
   assert.match(html, /addEventListener\("keydown"/);

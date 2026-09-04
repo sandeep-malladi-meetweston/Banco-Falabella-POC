@@ -23,14 +23,14 @@ import { loadPageApi } from "./page-test-helpers.mjs";
  * exercised rather than assumed.
  */
 
-const borrowerPage = loadPageApi("borrower.html", "FalabellaBorrower");
-const lenderPage = loadPageApi("lender.html", "FalabellaLender");
+const borrowerPage = loadPageApi("borrower.html", "WestonBorrower");
+const lenderPage = loadPageApi("lender.html", "WestonLender");
 
 const borrower = borrowerPage.api;
 const lender = lenderPage.api;
-const workspace = borrowerPage.context.FalabellaWorkspace;
-const lenderWorkspace = lenderPage.context.FalabellaWorkspace;
-const copy = borrowerPage.context.FalabellaCopy;
+const workspace = borrowerPage.context.WestonWorkspace;
+const lenderWorkspace = lenderPage.context.WestonWorkspace;
+const copy = borrowerPage.context.WestonCopy;
 
 /* Values crossing out of a vm realm carry that realm's prototypes. */
 const plain = value => JSON.parse(JSON.stringify(value));

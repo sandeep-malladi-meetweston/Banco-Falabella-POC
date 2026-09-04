@@ -5,10 +5,10 @@ import { loadPageApi } from "./page-test-helpers.mjs";
 /* Same load as lender-model.test.mjs: every <script> of the page in document
    order, one vm context, no document. The render functions under test are pure
    string builders, so they need nothing else. */
-const { api: lender, context, html } = loadPageApi("lender.html", "FalabellaLender");
-const workspace = context.FalabellaWorkspace;
-const credit = context.FalabellaCredit;
-const copy = context.FalabellaCopy;
+const { api: lender, context, html } = loadPageApi("lender.html", "WestonLender");
+const workspace = context.WestonWorkspace;
+const credit = context.WestonCredit;
+const copy = context.WestonCopy;
 
 /* Values crossing out of the vm realm carry that realm's prototypes. */
 const plain = value => JSON.parse(JSON.stringify(value));
@@ -33,7 +33,7 @@ test("the three metric tiles carry spec §5.2's labels and formatted values", ()
   ]) {
     assert.ok(markup.includes(t(key)), `the metrics are missing ${key}`);
   }
-  /* The numbers are the model's, formatted by FalabellaCredit — never written
+  /* The numbers are the model's, formatted by WestonCredit — never written
      down here. */
   const metrics = plain(lender.portfolioMetrics(lender.buildPortfolio(), NOW));
   assert.ok(markup.includes(credit.formatUF(metrics.activeOriginationUF)));
@@ -397,7 +397,7 @@ test("the page wires the board's events and announces filter results", () => {
     "syncCaseHistory",
     "viewStateForCaseHash"
   ]) {
-    assert.equal(typeof lender[name], "function", `FalabellaLender.${name} is missing`);
+    assert.equal(typeof lender[name], "function", `WestonLender.${name} is missing`);
   }
   /* The board is driven by the four event surfaces of Task 5 step 3. */
   assert.match(html, /addEventListener\("hashchange"/);

@@ -14,14 +14,14 @@ rebuilt against a different engineering standard.
 
 This portal has two parents, and the seam between them is the whole design.
 
-**The borrower page inherits from Banco Falabella.** The autoplaying WhatsApp narrative, the
+**The borrower page inherits from Weston.** The autoplaying WhatsApp narrative, the
 simulator, the pre-approval, the nine documents, the phase rail, the demo controls and the
-second-person voice were BF's and stay BF's. Nothing about that story needed to change; it was
+second-person voice were Weston's and stay Weston's. Nothing about that story needed to change; it was
 already the best thing in the Spanish demo, and it already stops in exactly the right place.
 
 **The lender page inherits its information architecture from Silver Hill.** Seven-stage board, three
 metric tiles, a cross-stage `Notifications` filter, a search-and-sort toolbar, and a right-side
-workspace drawer with tabs, a focus trap and hash-addressable state. Banco Falabella's colour and
+workspace drawer with tabs, a focus trap and hash-addressable state. Weston's colour and
 logo sit on Silver Hill's layout, density and interaction model.
 
 The reason for splitting the inheritance that way is that the two pages answer different questions.
@@ -37,11 +37,11 @@ Literally the same, and asserted by tests:
 
 - **`assets/copy.js`.** Every user-visible string on both pages, flat dotted keys namespaced by
   surface. Neither page contains an English literal outside it. Adding Spanish is filling one object.
-- **`assets/falabella-credit.js`.** Every constant and the payment function. Neither page hardcodes
+- **`assets/weston-credit.js`.** Every constant and the payment function. Neither page hardcodes
   a derived figure. This is the one defect the Spanish `DISENO.md` §2 warns about — two files each
   holding their own copy of `RATE_FOG` — and it is the one that must not come back. The borrower's
   simulator and the lender's Risk tab compute the same 24.7% from the same call.
-- **`assets/falabella-workspace.js`.** The state engine: nine documents, five verdicts, four review
+- **`assets/weston-workspace.js`.** The state engine: nine documents, five verdicts, four review
   reasons, two conditions, seven derived stages, and a pure transition per action. DOM-free, so the
   Node suite exercises it directly.
 - **The design tokens.** Identical `:root` — the same brand greens off the official SVG, the same
@@ -455,7 +455,7 @@ with the same keys — and that "nothing in borrower.html or lender.html changes
 the strings; it did not hold for the *switch*, because both pages resolved copy against
 `DEFAULT_LOCALE` rather than against anything switchable. So the active locale now lives in the copy
 layer itself, with `locale()` and `setLocale()`, and `t(key)` with no locale argument means "whatever
-is switched on" rather than "English". `falabella-credit.js` already read `NUMBER_LOCALE` through
+is switched on" rather than "English". `weston-credit.js` already read `NUMBER_LOCALE` through
 `numberLocale()`; pointing that one line at `copy.locale()` means every `formatUF`, `formatCLP` and
 `formatDate` call already written in both pages follows the switch with no edit at the call site.
 That is the whole point of having had one arithmetic module: **UF 3,150** becomes **UF 3.150** and

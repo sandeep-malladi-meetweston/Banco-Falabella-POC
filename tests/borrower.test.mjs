@@ -7,10 +7,10 @@ import { loadPageApi } from "./page-test-helpers.mjs";
    (viewState, step), and every render function returns a string — so the whole
    of the borrower surface is testable without a browser and without waiting on
    real time. Autoplay is driven through the injectable `later` seam. */
-const { api: borrower, context, html } = loadPageApi("borrower.html", "FalabellaBorrower");
-const workspace = context.FalabellaWorkspace;
-const credit = context.FalabellaCredit;
-const copy = context.FalabellaCopy;
+const { api: borrower, context, html } = loadPageApi("borrower.html", "WestonBorrower");
+const workspace = context.WestonWorkspace;
+const credit = context.WestonCredit;
+const copy = context.WestonCopy;
 
 /* Values crossing out of the vm realm carry that realm's prototypes. */
 const plain = value => JSON.parse(JSON.stringify(value));
@@ -284,7 +284,7 @@ test("the whole nine-document checklist has been through the thread", () => {
 
 /* =============================================================== the simulator */
 
-test("every figure the simulator shows comes from FalabellaCredit", () => {
+test("every figure the simulator shows comes from WestonCredit", () => {
   const figures = credit.caseFigures();
   const markup = borrower.renderSimulator(finished());
 
@@ -870,8 +870,8 @@ test("the page is a real document with the seams the suite needs", () => {
   assert.match(html, /id="borrower-status"[^>]*role="status"[^>]*aria-live="polite"/);
   assert.match(html, /class="skip-link"/);
   assert.match(html, /<script src="assets\/copy\.js">/);
-  assert.match(html, /<script src="assets\/falabella-credit\.js">/);
-  assert.match(html, /<script src="assets\/falabella-workspace\.js">/);
+  assert.match(html, /<script src="assets\/weston-credit\.js">/);
+  assert.match(html, /<script src="assets\/weston-workspace\.js">/);
   assert.match(html, /if \(typeof document !== "undefined"\) init\(\);/);
   assert.ok(!/draggable/.test(html), "no drag and drop anywhere");
   /* A real typable composer, not a decorative one. */
@@ -892,7 +892,7 @@ test("no user-visible English literal lives outside copy.js", () => {
     "Documents over WhatsApp",
     "Document review",
     "Restart",
-    "Banco Falabella mortgage assistant"
+    "Weston mortgage assistant"
   ];
   for (const literal of literals) {
     assert.ok(!html.includes(literal), `"${literal}" is written into borrower.html`);

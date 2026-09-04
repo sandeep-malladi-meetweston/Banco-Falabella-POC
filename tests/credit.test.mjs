@@ -5,10 +5,10 @@ import { loadScriptApi, readPage } from "./page-test-helpers.mjs";
 /* The module must stand up on its own, with no copy layer present: its
    formatters fall back to en-US. Loaded twice on purpose — once bare, once with
    copy.js in the same context — so both halves of that contract are tested. */
-const bare = loadScriptApi("assets/falabella-credit.js", "FalabellaCredit");
+const bare = loadScriptApi("assets/weston-credit.js", "WestonCredit");
 const credit = bare.api;
 
-const withCopy = loadScriptApi("assets/falabella-credit.js", "FalabellaCredit", [
+const withCopy = loadScriptApi("assets/weston-credit.js", "WestonCredit", [
   "assets/copy.js"
 ]);
 
@@ -250,17 +250,17 @@ test("formatDate renders an ISO date in English, stable across time zones", () =
   assert.equal(credit.formatDate("not-a-date"), "not-a-date");
 });
 
-test("formatters read their locale from FalabellaCopy but do not require it", () => {
+test("formatters read their locale from WestonCopy but do not require it", () => {
   /* Bare context: no copy layer at all, and the numbers still group in en-US. */
-  assert.equal(bare.context.FalabellaCopy, undefined);
+  assert.equal(bare.context.WestonCopy, undefined);
   assert.equal(credit.formatUF(LOAN_UF), "UF 3,150");
 
   /* With the copy layer present the locale is read from it, at call time. */
-  assert.equal(withCopy.context.FalabellaCopy.NUMBER_LOCALE.en, "en-US");
+  assert.equal(withCopy.context.WestonCopy.NUMBER_LOCALE.en, "en-US");
   assert.equal(withCopy.api.formatUF(LOAN_UF), "UF 3,150");
-  withCopy.context.FalabellaCopy.NUMBER_LOCALE.en = "de-DE";
+  withCopy.context.WestonCopy.NUMBER_LOCALE.en = "de-DE";
   assert.equal(withCopy.api.formatUF(LOAN_UF), "UF 3.150");
-  withCopy.context.FalabellaCopy.NUMBER_LOCALE.en = "en-US";
+  withCopy.context.WestonCopy.NUMBER_LOCALE.en = "en-US";
   assert.equal(withCopy.api.formatUF(LOAN_UF), "UF 3,150");
 });
 
@@ -282,7 +282,7 @@ test("caseFigures gives both pages one derived set to read from", () => {
 
 test("the module is a strict-mode script on globalThis, DOM-free", () => {
   assert.match(bare.source, /^"use strict";/m);
-  assert.match(bare.source, /globalThis\.FalabellaCredit\s*=/);
+  assert.match(bare.source, /globalThis\.WestonCredit\s*=/);
   assert.equal(/\bdocument\b/.test(bare.source), false);
   assert.equal(/Date\.now\(|Math\.random\(/.test(bare.source), false);
 });

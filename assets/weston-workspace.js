@@ -1,4 +1,4 @@
-/* Banco Falabella English portal — the shared case state engine.
+/* Weston English portal — the shared case state engine.
  *
  * One state shape, one set of transitions, both surfaces. The borrower page and
  * the lender page never reach into each other: they hand this module a state and
@@ -18,7 +18,7 @@
  *   - No DOM. This file is loaded and tested on its own, with no copy layer in
  *     the context, so it stores no English prose it invented: the `summary` of
  *     an item it raises itself is the copy key `review.<type>`, and the renderer
- *     puts it through `FalabellaCopy.t()`. Free text that a human or another
+ *     puts it through `WestonCopy.t()`. Free text that a human or another
  *     system produced — a message, a filename, a condition — is data and is
  *     stored verbatim.
  *   - Review work never moves the stage. `deriveStage` reads workflow
@@ -845,7 +845,7 @@
 
   /* =================================================================== api */
 
-  globalThis.FalabellaWorkspace = {
+  globalThis.WestonWorkspace = {
     STATE_VERSION: STATE_VERSION,
     STAGES: STAGES,
     REVIEW_TYPES: REVIEW_TYPES,

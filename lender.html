@@ -4,18 +4,18 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- The brand name reads the same in every locale; the rest of the title is
-       copy, so init() sets it from FalabellaCopy (§8). -->
-  <title>Banco Falabella</title>
+       copy, so init() sets it from WestonCopy (§8). -->
+  <title>Weston</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=Public+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
   <style>
     /* Silver Hill's design system — type scale, spacing, radii, shadows and
-       neutrals verbatim — with Banco Falabella's accent in place of the orange.
+       neutrals verbatim — with Weston's accent in place of the orange.
        Local font fallbacks are mandatory: the demo must survive being opened
        with no network. */
     :root{
-      /* Banco Falabella — from logo-bf-vertical.svg */
+      /* Weston — from logo-weston.svg */
       --brand:#007a33;--brand-lime:#c3d600;--brand-deep:#154734;--brand-wash:#eff8f2;--brand-rule:#bfe0cc;
       /* Silver Hill structural neutrals — verbatim */
       --ink:#18212b;--slate:#52606d;--muted:#7b8794;--paper:#fff;--shell:#f3f5f7;--rule:#dbe1e7;--ok:#137a4a;--danger:#b42318;--warn:#8a5a00;
@@ -337,16 +337,16 @@
   <div id="lender-app"></div>
   <div id="lender-status" role="status" aria-live="polite"></div>
   <script src="assets/copy.js"></script>
-  <script src="assets/falabella-credit.js"></script>
-  <script src="assets/falabella-workspace.js"></script>
+  <script src="assets/weston-credit.js"></script>
+  <script src="assets/weston-workspace.js"></script>
   <script>
-    /* Banco Falabella English portal — the lender surface.
+    /* Weston English portal — the lender surface.
      *
      * Structure and interaction model come from Silver Hill's lender.html: seven
      * derived stages on one board, three metric tiles, a cross-stage needs-review
      * filter, and a hash-addressable case workspace. The arithmetic comes from
-     * FalabellaCredit, the state from FalabellaWorkspace, and every user-visible
-     * string from FalabellaCopy — this file holds none of the three itself.
+     * WestonCredit, the state from WestonWorkspace, and every user-visible
+     * string from WestonCopy — this file holds none of the three itself.
      *
      * Loan 1 (H-2026-08415) is the live case and the only interactive one. The
      * other eleven are read-only fixtures whose only job is to make the board a
@@ -356,9 +356,9 @@
     "use strict";
 
     (function () {
-      var copy = globalThis.FalabellaCopy;
-      var credit = globalThis.FalabellaCredit;
-      var workspace = globalThis.FalabellaWorkspace;
+      var copy = globalThis.WestonCopy;
+      var credit = globalThis.WestonCredit;
+      var workspace = globalThis.WestonWorkspace;
 
       /* The demo's clock. One fixed instant, so the board, the metrics and the
          substatuses read the same on every machine and in every time zone —
@@ -366,7 +366,7 @@
       var DEMO_NOW = "2026-08-06T12:00:00.000Z";
 
       /* No locale argument: the copy layer holds the one that is switched on,
-         and falabella-credit.js reads the same one for its numbers and dates.
+         and weston-credit.js reads the same one for its numbers and dates.
          One switch therefore moves every string *and* every figure — a Spanish
          page printing "UF 3,150" with an English separator would be worse than
          an English one. */
@@ -435,7 +435,7 @@
       var CASE_ID = "H-2026-08415";
 
       /* Every figure here is either plain case data or comes from
-         FalabellaCredit. Nothing derived is written down twice (§3.1). */
+         WestonCredit. Nothing derived is written down twice (§3.1). */
       var FALLBACK_CASE = {
         caseId: CASE_ID,
         driveUrl: "https://drive.google.com/drive/folders/1eFFTCGNeIAmL_9II0XLSEyhwF00DEqp_",
@@ -2169,7 +2169,7 @@
       }
 
       /* §5.2's three tiles. Every number is portfolioMetrics', formatted by
-         FalabellaCredit; the needs-review tile is the lime one. */
+         WestonCredit; the needs-review tile is the lime one. */
       function renderMetrics(loans, now) {
         var metrics = portfolioMetrics(loans, now);
         return (
@@ -2401,7 +2401,7 @@
           boardAttributes +
           '><button type="button" class="topbar-logo-button" id="reset-filters" aria-label="' +
           text("lender.logo-reset-aria") +
-          '"><img class="topbar-logo" src="assets/logo-bf.svg" alt="' +
+          '"><img class="topbar-logo" src="assets/logo-weston.svg" alt="' +
           text("lender.logo-alt") +
           '"></button><span class="portal-label">' +
           text("lender.title") +
@@ -2474,7 +2474,7 @@
          arrival goes through this one seam — no bare setTimeout in logic — so the
          suite fires them synchronously and never waits on real time.
 
-         The shape, which Task 7 reuses on FalabellaBorrower:
+         The shape, which Task 7 reuses on WestonBorrower:
            later(ms, fn)          schedule through the current scheduler
            setLater(schedule)     replace it, returning the one it displaced
            DEFAULT_LATER(ms, fn)  the setTimeout-backed default
@@ -3857,7 +3857,7 @@
       }
 
       /* The policy, point by point. The three rules that are arithmetic carry the
-         result FalabellaCredit computed; tenure, contributions, the appraisal and
+         result WestonCredit computed; tenure, contributions, the appraisal and
          the authority are written down, not computed (§11). */
       var POLICY_POINTS = [
         { id: "payment-to-income", checkId: "payment-to-income" },
@@ -7135,7 +7135,7 @@
         return rendered;
       }
 
-      globalThis.FalabellaLender = {
+      globalThis.WestonLender = {
         DEMO_NOW: DEMO_NOW,
         CASE_ID: CASE_ID,
         CASE_STORAGE_KEY: CASE_STORAGE_KEY,
