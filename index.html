@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Weston</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=Public+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+  <style>
+    /* The door onto the two surfaces. It borrows the tokens verbatim from
+       borrower.html and lender.html so the first thing a reviewer sees is
+       already the product, not a directory listing. Nothing here is stateful:
+       this page never touches weston-workspace.js. */
+    :root{
+      --brand:#007a33;--brand-lime:#c3d600;--brand-deep:#154734;--brand-wash:#eff8f2;--brand-rule:#bfe0cc;
+      --ink:#18212b;--slate:#52606d;--muted:#7b8794;--paper:#fff;--shell:#f3f5f7;--rule:#dbe1e7;
+      --display:Archivo,"Segoe UI",Arial,sans-serif;--body:"Public Sans","Segoe UI",Arial,sans-serif;--mono:"IBM Plex Mono",Consolas,monospace;
+      --radius:14px;--shadow:0 1px 2px rgba(21,71,52,.06),0 8px 24px rgba(21,71,52,.07)
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--shell);color:var(--ink);font:14px/1.5 var(--body)}
+    a:focus-visible{outline:3px solid var(--brand);outline-offset:3px}
+
+    .topbar{min-height:56px;display:flex;align-items:center;gap:15px;padding:9px 20px;background:var(--brand-deep);color:#fff}
+    .topbar-logo{width:138px;height:auto;display:block}
+    .portal-label{padding-left:16px;border-left:1px solid rgba(255,255,255,.22);color:#cfe0d7;font-family:var(--display);font-size:12.5px;font-weight:600}
+
+    main{max-width:880px;margin:0 auto;padding:56px 20px 72px}
+    h1{margin:0 0 10px;font:600 28px/1.25 var(--display);letter-spacing:-.01em}
+    .lede{margin:0 0 40px;max-width:60ch;color:var(--slate);font-size:15px}
+    .case{font:500 12.5px var(--mono);color:var(--brand-deep);background:var(--brand-wash);border:1px solid var(--brand-rule);border-radius:999px;padding:3px 10px}
+
+    .doors{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+    .door{display:block;padding:24px;border:1px solid var(--rule);border-radius:var(--radius);background:var(--paper);box-shadow:var(--shadow);color:inherit;text-decoration:none;transition:border-color .16s,transform .16s,box-shadow .16s}
+    .door:hover{border-color:var(--brand);transform:translateY(-2px);box-shadow:0 2px 4px rgba(21,71,52,.08),0 14px 32px rgba(21,71,52,.1)}
+    .door-kicker{font:600 10.5px var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+    .door h2{margin:8px 0 8px;font:600 19px var(--display)}
+    .door p{margin:0;color:var(--slate);font-size:13.5px}
+    .door-go{margin-top:16px;display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:13px;color:var(--brand)}
+
+    .note{margin-top:40px;padding-top:20px;border-top:1px solid var(--rule);color:var(--muted);font-size:12.5px;max-width:62ch}
+    .note code{font:500 12px var(--mono);color:var(--slate)}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <img class="topbar-logo" src="assets/logo-weston-inverse.svg" alt="Weston">
+    <span class="portal-label">Mortgage demo</span>
+  </header>
+
+  <main>
+    <h1>Two surfaces over one mortgage case</h1>
+    <p class="lede">
+      Case <span class="case">H-2026-08415</span> seen from both ends — the applicant being told
+      one thing at a time, and the officer comparing twelve loans side by side. Start on the
+      borrower side; it plays itself.
+    </p>
+
+    <div class="doors">
+      <a class="door" href="borrower.html">
+        <span class="door-kicker">Start here</span>
+        <h2>Borrower</h2>
+        <p>Javiera's side. Simulation, pre-approval, then nine documents arriving over WhatsApp. It runs on its own — set the speed to 4×.</p>
+        <span class="door-go">Open borrower portal →</span>
+      </a>
+
+      <a class="door" href="lender.html">
+        <span class="door-kicker">Then here</span>
+        <h2>Lender</h2>
+        <p>Carolina's side. The queue, the case file and the audit trail. It waits for you.</p>
+        <span class="door-go">Open lender portal →</span>
+      </a>
+    </div>
+
+    <p class="note">
+      No build step and no server: every page opens straight from the file system. See
+      <code>README.md</code> for the walkthrough and <code>DESIGN.md</code> for why it is shaped this way.
+    </p>
+  </main>
+</body>
+</html>
