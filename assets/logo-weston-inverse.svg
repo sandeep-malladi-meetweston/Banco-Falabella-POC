@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 127 38" role="img" aria-label="Weston">
   <!-- The inverse cut, for the dark green chrome. The tile lifts to the brighter
-       green so it still reads against --brand-deep, and the wordmark goes white. -->
+       green so it still reads against the deep-green chrome, and the wordmark goes white. -->
   <defs>
     <style>
       .wmk-tile { fill: #007a33; }
